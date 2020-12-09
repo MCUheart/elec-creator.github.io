@@ -1,0 +1,854 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ROS-TF与URDF | Malloy Yuan</title><meta name="description" content="机器人操作系统"><meta name="keywords" content="ROS,Linux"><meta name="author" content="Malloy Yuan"><meta name="copyright" content="Malloy Yuan"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/private/favicon.ico"><link rel="canonical" href="https://elec-creator.com/posts/28077269.html"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin="crossorigin"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//ta.qq.com"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin="crossorigin"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="preconnect" href="//zz.bdstatic.com"/><meta name="google-site-verification" content="-C5e7hXOaWP7JIZkCAvpULlv1tW3Tv3ExAZlK88AqhU"/><meta name="msvalidate.01" content="E0839A72FFE11F4E7ECFD4B1ABD6CBD3"/><meta name="baidu-site-verification" content="XBG5E7Ffx5"/><meta name="360-site-verification" content="9d0d9716fdebbf21ea6adaef08bca139"/><meta property="og:type" content="article"><meta property="og:title" content="ROS-TF与URDF"><meta property="og:url" content="https://elec-creator.com/posts/28077269.html"><meta property="og:site_name" content="Malloy Yuan"><meta property="og:description" content="机器人操作系统"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/cover/post-cover/ros-cover.jpg"><meta property="article:published_time" content="2020-04-27T08:26:40.000Z"><meta property="article:modified_time" content="2020-12-09T09:44:09.502Z"><meta name="twitter:card" content="summary"><link rel="manifest" href="/img/private/pwa/manifest.json"/><meta name="theme-color" content="#000000"/><meta name="msapplication-TileColor" content="#000000"/><link rel="apple-touch-icon" sizes="180x180" href="/img/private/pwa/apple-touch-icon.png"/><link rel="icon" type="image/png" sizes="32x32" href="/img/private/pwa/32.png"/><link rel="icon" type="image/png" sizes="16x16" href="/img/private/pwa/16.png"/><link rel="mask-icon" href="/img/private/pwa/safari-pinned-tab.svg" color="#5bbad5"/><script>var activateDarkMode = function () {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000')
+  }
+}
+var activateLightMode = function () {
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fff')
+  }
+}
+
+var getCookies = function (name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+var autoChangeMode = 'false'
+var t = getCookies('theme')
+if (autoChangeMode === '1') {
+  var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  var isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+  var isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined) {
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport) {
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour <= 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+      if (Cookies.get('theme') === undefined) {
+        e.matches ? activateDarkMode() : activateLightMode()
+      }
+    })
+  } else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else if (autoChangeMode === '2') {
+  now = new Date()
+  hour = now.getHours()
+  isNight = hour <= 6 || hour >= 18
+  if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else {
+  if (t === 'dark') activateDarkMode()
+  else if (t === 'light') activateLightMode()
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="prev" title="ROS-roscpp" href="https://elec-creator.com/posts/3b2a603b.html"><link rel="next" title="hexo官方标签插件使用" href="https://elec-creator.com/posts/ac1d9abb.html"><script async="async" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><script>(adsbygoogle = window.adsbygoogle || []).push({
+  google_ad_client: 'ca-pub-6017375467561303',
+  enable_page_level_ads: 'true'
+});</script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?f0eee211545bfd4d4a152fd36de6c1a1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-161823084-1', 'auto');
+ga('send', 'pageview');
+</script><script src="https://tajs.qq.com/stats?sId=66536124" charset="UTF-8"></script><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: {"languages":{"author":"作者: Malloy Yuan","link":"链接: ","source":"来源: Malloy Yuan","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  ClickShowText: {"text":"富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善","fontSize":"15px"},
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: undefined,
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  baiduPush: true,
+  highlightCopy: true,
+  highlightLang: true,
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: false    
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true
+  }</script><noscript><style>
+#nav {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><link rel="stylesheet" href="//at.alicdn.com/t/font_1975360_x5zqehblh1.css"><meta name="generator" content="Hexo 4.2.0"><link rel="alternate" href="/atom.xml" title="Malloy Yuan" type="application/atom+xml">
+</head><body><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/portrait/portrait-3.jpg" onerror="onerror=null;src='/img/private/site_img-load-404-1.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">56</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">34</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">37</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down menus-expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-film"></i><span> 电影</span></a></li><li><a class="site-page" href="/gallery/"><i class="fa-fw fas fa-camera-retro"></i><span> 照片</span></a></li><li><a class="site-page" href="/books/"><i class="fa-fw fas fa-book"></i><span> 阅读</span></a></li><li><a class="site-page" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageaboard/"><i class="fa-fw fas fa-comment-dots"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-address-book"></i><span> 关于</span></a></div></div></div></div><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-认识tf"><span class="toc-text"> 1. 认识TF</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#11-简介"><span class="toc-text"> 1.1. 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-ros中的tf"><span class="toc-text"> 1.2. ROS中的TF</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-tf消息"><span class="toc-text"> 2. TF消息</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#21-transformstampedmsg"><span class="toc-text"> 2.1. TransformStamped.msg</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22-格式规范"><span class="toc-text"> 2.2. 格式规范</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#23-tf树的数据类型"><span class="toc-text"> 2.3. TF树的数据类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#24-格式定义"><span class="toc-text"> 2.4. 格式定义</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-tf-in-c"><span class="toc-text"> 3. tf in c++</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#31-简介"><span class="toc-text"> 3.1. 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#32-数据类型"><span class="toc-text"> 3.2. 数据类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#33-数据转换"><span class="toc-text"> 3.3. 数据转换</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#34-第1部分定义空间点和空间向量"><span class="toc-text"> 3.4. 第1部分定义空间点和空间向量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#35-第2部分定义四元数"><span class="toc-text"> 3.5. 第2部分定义四元数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#36-第3部分定义旋转矩阵"><span class="toc-text"> 3.6. 第3部分定义旋转矩阵</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#37-tf类"><span class="toc-text"> 3.7. TF类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#38-tftransformbroadcaster类"><span class="toc-text"> 3.8. tf::TransformBroadcaster类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#39-tftransformlistener类"><span class="toc-text"> 3.9. tf::TransformListener类</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-tf-in-python"><span class="toc-text"> 4. tf in python</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#41-简介"><span class="toc-text"> 4.1. 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#42-数据类型"><span class="toc-text"> 4.2. 数据类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#43-库"><span class="toc-text"> 4.3. 库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#44-tftransformations"><span class="toc-text"> 4.4. tf.transformations</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#441-第1部分定义空间点和空间向量"><span class="toc-text"> 4.4.1. 第1部分，定义空间点和空间向量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#442-第2部分定义四元数"><span class="toc-text"> 4.4.2. 第2部分，定义四元数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#443-第3部分定义四元数"><span class="toc-text"> 4.4.3. 第3部分，定义四元数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#45-tf类"><span class="toc-text"> 4.5. TF类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#451-tftransformlistener类"><span class="toc-text"> 4.5.1. tf.TransformListener类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#452"><span class="toc-text"> 4.5.2.</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#453-tftransformbroadcaster类"><span class="toc-text"> 4.5.3. tf.TransformBroadcaster类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#46-tf相关工具命令"><span class="toc-text"> 4.6. TF相关工具命令</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-tf-in-python"><span class="toc-text"> 5. tf in python</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#51-简介"><span class="toc-text"> 5.1. 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#52-数据类型"><span class="toc-text"> 5.2. 数据类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#53-tf库"><span class="toc-text"> 5.3. TF库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#531-tftransformations"><span class="toc-text"> 5.3.1. tf.transformations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#532-第1部分定义空间点和空间向量"><span class="toc-text"> 5.3.2. 第1部分，定义空间点和空间向量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#533-第2部分定义四元数"><span class="toc-text"> 5.3.3. 第2部分，定义四元数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#534-第3部分定义四元数"><span class="toc-text"> 5.3.4. 第3部分，定义四元数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#54-tf类"><span class="toc-text"> 5.4. TF类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#541-tftransformlistener类"><span class="toc-text"> 5.4.1. tf.TransformListener类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#542"><span class="toc-text"> 5.4.2.</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#543-tftransformbroadcaster类"><span class="toc-text"> 5.4.3. tf.TransformBroadcaster类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#55-tf相关工具命令"><span class="toc-text"> 5.5. TF相关工具命令</span></a></li></ol></li></ol></div></div></div><div id="body-wrap"><div id="web_bg" data-type="color"></div><header class="post-bg" id="page-header" style="background-image: url(https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/top/post-top/ros-top.jpg)"><nav id="nav"><span class="pull-left" id="blog_name"><a class="blog_title" id="site-name" href="/">Malloy Yuan</a></span><span class="pull-right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fas fa-list"></i><span> 娱乐</span><i class="fas fa-chevron-down menus-expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-film"></i><span> 电影</span></a></li><li><a class="site-page" href="/gallery/"><i class="fa-fw fas fa-camera-retro"></i><span> 照片</span></a></li><li><a class="site-page" href="/books/"><i class="fa-fw fas fa-book"></i><span> 阅读</span></a></li><li><a class="site-page" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/messageaboard/"><i class="fa-fw fas fa-comment-dots"></i><span> 留言板</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-address-book"></i><span> 关于</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">ROS-TF与URDF</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-04-27 16:26:40"><i class="far fa-calendar-alt fa-fw"></i> 发表于 2020-04-27</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-12-09 17:44:09"><i class="fas fa-history fa-fw"></i> 更新于 2020-12-09</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fas fa-inbox fa-fw post-meta__icon"></i><a class="post-meta__categories" href="/categories/ros/">ROS</a></span></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta__icon"></i><span>字数总计:</span><span class="word-count">9.7k</span><span class="post-meta__separator">|</span><i class="far fa-clock fa-fw post-meta__icon"></i><span>阅读时长: 41 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="far fa-eye fa-fw post-meta__icon"></i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/hint.css/2.4.1/hint.min.css"><div class="note primary">
+            <p>📖 机器人的坐标变换一直以来是机器人学的一个难点，我们人类在进行一个简单的动作时，从思考到实施行动再到完成动作可能仅仅需要几秒钟，但是机器人来讲就需要大量的计算和坐标转换。</p>
+          </div>
+<hr />
+<h1 id="1-认识tf"><a class="markdownIt-Anchor" href="#1-认识tf"></a> 1. 认识TF</h1>
+<h2 id="11-简介"><a class="markdownIt-Anchor" href="#11-简介"></a> 1.1. 简介</h2>
+<p>TF是一个ROS世界里的一个基本的也是很重要的概念，所谓TF(TransForm)，就是坐标转换．在现实生活中，我们做出各种行为模式都可以在很短的时间里完成，比如拿起身边的物品，但是在机器人的世界里，则远远没有那么简单．观察下图，我们来分析机器人拿起身边的物品需要做到什么，而TF又起到什么样的作用．</p>
+<p><img src= "/img/private/loading-4.gif" data-src="https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/pr2_tf.png" alt="img" /></p>
+<p>观察这个机器人，我们直观上不认为拿起物品会又什么难度，站在人类的立场上，我们也许会想到手向前伸，抓住，手收回．就完成了这整个一系列的动作．但是如今的机器人远远没有这么智能，它能得到的只是各种传感器发送回来的数据，然后它再处理各种数据进行操作，比如手臂弯曲45度，再向前移动２０cm等这样的各种十分精确的数据，尽管如此，机器人依然没法做到像人类一样自如的进行各种行为操作．那么在这个过程中，TF又扮演着什么样的角色呢？还拿该图来说，当机器人的＂眼睛＂获取一组数据，关于物体的坐标方位，但是相对于机器人手臂来说，<strong>这个坐标只是相对于机器人头部的传感器，并不直接适用于机器人手臂执行，那么物体相对于头部和手臂之间的坐标转换，就是TF.</strong></p>
+<p>坐标变换包括了位置和姿态两个方面的变换，ROS中的tf是一个可以让用户随时记录多个坐标系的软件包。tf保持缓存的树形结构中的坐标系之间的关系，并且允许用户在任何期望的时间点在任何两个坐标系之间转换点，矢量等．</p>
+<h2 id="12-ros中的tf"><a class="markdownIt-Anchor" href="#12-ros中的tf"></a> 1.2. ROS中的TF</h2>
+<p>tf的定义不是那么的死板，它可以被当做是一种标准规范，这套标准定义了坐标转换的数据格式和数据结构．tf本质是树状的数据结构，所以我们通常称之为**“tf tree”**,tf也可以看成是一个topic:<code>/tf</code>，话题中的message保存的就是tf tree的数据结构格式．维护了整个机器人的甚至是地图的坐标转换关系．tf还可以看成是一个package,它当中包含了很多的工具．比如可视化，查看关节间的tf,debug tf等等．tf含有一部分的接口，就是我们前面章节介绍的roscpp和rospy里关于tf的API．所以可以看成是话题转换的标准，工具，接口．</p>
+<p><img src= "/img/private/loading-4.gif" data-src="https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/tf_wiki.png" alt="img" /></p>
+<p>观察上图，我们可以看到ROS数据结构的一个抽象图，ROS中机器人模型包含大量的部件，这些部件统称之为<strong>link</strong>,每一个link上面对应着一个<strong>frame</strong>, 即一个坐标系．<strong>link和frame概念是绑定在一起的</strong>．像上图pr2模型中我们可以看到又很多的frame,错综复杂的铺置在机器人的各个link上，维护各个坐标系之间的关系，就要靠着<strong>tf tree</strong>来处理，维护着各个坐标系之间的联通．如下图：</p>
+<p><img src= "/img/private/loading-4.gif" data-src="https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/tf_tree_pr2.png" alt="img" /></p>
+<p>上图是我们常用的robot_sim_demo运行起来的tf　tree结构，每一个圆圈代表一个frame,对应着机器人上的一个link，<strong>任意的两个frame之间都必须是联通的</strong>，如果出现某一环节的断裂，<strong>就会引发error系统报错</strong>．<strong>所以完整的tf tree不能有任何断层的地方</strong>，这样我们才能查清楚任意两个frame之间的关系．仔细观察上图，我们发现每两个frame之间都有一个<strong>broadcaster</strong>,这就是为了使得两个frame之间能够正确连通，中间都会有一个Node来发布消息来broadcaster.如果缺少Node来发布消息维护连通，那么这两个frame之间的连接就会断掉．<strong>broadcaster就是一个publisher,如果两个frame之间发生了相对运动</strong>，broadcaster就会发布相关消息．</p>
+<h1 id="2-tf消息"><a class="markdownIt-Anchor" href="#2-tf消息"></a> 2. TF消息</h1>
+<h2 id="21-transformstampedmsg"><a class="markdownIt-Anchor" href="#21-transformstampedmsg"></a> 2.1. TransformStamped.msg</h2>
+<p><img src= "/img/private/loading-4.gif" data-src="https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/tf_tree_pr2.png" alt="img" /></p>
+<p>上一节在介绍ROS中的TF时候我们已经初步的认识了TF和TF树，<strong>了解了在每个frame之间都会有broadcaster来发布消息维系坐标转换</strong>．那么这个消息到底是什么样子的呢？这个消息TransformStampde.msg,它就是处理两个frame之间一小段tf的数据格式．</p>
+<h2 id="22-格式规范"><a class="markdownIt-Anchor" href="#22-格式规范"></a> 2.2. 格式规范</h2>
+<p>TransformStamped.msg的格式规范如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">std_mags&#x2F;Header header</span><br><span class="line">        uint32 seq</span><br><span class="line">        time stamp</span><br><span class="line">        string frame_id</span><br><span class="line">string child_frame_id</span><br><span class="line">geometry_msgs&#x2F;Transform transform</span><br><span class="line">        geometry_msgs&#x2F;Vector3 translation</span><br><span class="line">                float64 x</span><br><span class="line">                float64 y</span><br><span class="line">                float64 z</span><br><span class="line">        geometry_msgs&#x2F;Quaternion rotation</span><br><span class="line">                float64 x</span><br><span class="line">                float64 y</span><br><span class="line">                flaot64 z</span><br><span class="line">                float64 w</span><br></pre></td></tr></table></figure>
+<p>观察标准的格式规范，首先header定义了序号，时间以及frame的名称．接着还写了child_frame，这两个frame之间要做那种变换就是由geometry_msgs/Transform来定义．Vector3三维向量表示平移，Quaternion四元数表示旋转．像下图TF树中的两个frame之间的消息，就是由这种格式来定义的．odom就是frame_id,baselink_footprint就是child_frame_id.我们知道，一个topic上面可能会有很多个node向上面发送消息。如图所示，不仅有我们看到的frame发送坐标变换个tf，还有别的frame也在同样的向它发送消息。最终，许多的TransformStamped.msg发向tf，形成了TF树。</p>
+<p><img src= "/img/private/loading-4.gif" data-src="https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/tf_tree.jpg" alt="img" /></p>
+<h2 id="23-tf树的数据类型"><a class="markdownIt-Anchor" href="#23-tf树的数据类型"></a> 2.3. TF树的数据类型</h2>
+<p>上面我们讲了，TF tree是由很多的frame之间TF拼接而成。那么TF tree是什么类型呢？如下：</p>
+<ul>
+<li>tf/tfMessage.msg</li>
+<li>tf2_msgs/TFMessage.msg</li>
+</ul>
+<p>这里TF的数据类型有两个，主要的原因是版本的迭代。自ROS Hydro以来，tf第一代已被“弃用”，转而支持tf2。tf2相比tf更加简单高效。此外也添加了一些新的功能。</p>
+<p>由于tf2是一个重大的变化，tf API一直保持现有的形式。由于tf2具有tf特性的超集和一部分依赖关系，所以tf实现已经被移除，并被引用到tf2下。这意味着所有用户都将与tf2兼容。官网建议新工作直接使用tf2，因为它有一个更清洁的界面，和更好的使用体验。</p>
+<p>如何查看自己使用的TF是哪一个版本，使用命令<code>rostopic info /tf</code>即可。</p>
+<h2 id="24-格式定义"><a class="markdownIt-Anchor" href="#24-格式定义"></a> 2.4. 格式定义</h2>
+<p>tf/tfMessage.msg或tf2_msgs/TFMessage标准格式规范如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">geometry_msgs&#x2F;TransformStamped[] transforms</span><br><span class="line">        std_msgs&#x2F;Header header</span><br><span class="line">                uint32 seq</span><br><span class="line">                time stamp</span><br><span class="line">                string frame_id</span><br><span class="line">        string child_frame_id</span><br><span class="line">        geometry_msgs&#x2F;Transform transform</span><br><span class="line">                geometry_msgs&#x2F;Vector3 translation</span><br><span class="line">                        float64 x</span><br><span class="line">                        float64 y</span><br><span class="line">                        float64 z</span><br><span class="line">                geometry_msgs&#x2F;Quaternion rotation</span><br><span class="line">                        float64 x</span><br><span class="line">                        float64 y</span><br><span class="line">                        flaot64 z</span><br><span class="line">                        float64 w</span><br></pre></td></tr></table></figure>
+<p>如上，一个TransformStamped数组就是一个TF tree。</p>
+<h1 id="3-tf-in-c"><a class="markdownIt-Anchor" href="#3-tf-in-c"></a> 3. tf in c++</h1>
+<h2 id="31-简介"><a class="markdownIt-Anchor" href="#31-简介"></a> 3.1. 简介</h2>
+<p>前面内容我们介绍了TF的基本的概念和TF树消息的格式类型，我们知道，TF不仅仅是一个标准、话题，它还是一个接口。本节课我们就介绍c++中TF的一些函数和写法。</p>
+<h2 id="32-数据类型"><a class="markdownIt-Anchor" href="#32-数据类型"></a> 3.2. 数据类型</h2>
+<p>C++中给我们提供了很多TF的数据类型，如下表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">名称</th>
+<th style="text-align:center">数据类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">向量</td>
+<td style="text-align:center">tf::Vector3</td>
+</tr>
+<tr>
+<td style="text-align:center">点</td>
+<td style="text-align:center">tf::Point</td>
+</tr>
+<tr>
+<td style="text-align:center">四元数</td>
+<td style="text-align:center">tf::Quaternion</td>
+</tr>
+<tr>
+<td style="text-align:center">3*3矩阵（旋转矩阵）</td>
+<td style="text-align:center">tf::Matrix3x3</td>
+</tr>
+<tr>
+<td style="text-align:center">位姿</td>
+<td style="text-align:center">tf::pose</td>
+</tr>
+<tr>
+<td style="text-align:center">变换</td>
+<td style="text-align:center">tf::Transform</td>
+</tr>
+<tr>
+<td style="text-align:center">带时间戳的以上类型</td>
+<td style="text-align:center">tf::Stamped</td>
+</tr>
+<tr>
+<td style="text-align:center">带时间戳的变换</td>
+<td style="text-align:center">tf::StampedTransform</td>
+</tr>
+</tbody>
+</table>
+<p>**易混注意：**虽然此表的最后带时间戳的变换数据类型为tf::StampedTransform,和上节我们所讲的geometry_msgs/TransformStamped.msg看起来很相似，但是其实数据类型完全不一样，tf::StampedTransform只能用在C<ins>里，只是C</ins>的一个类，一种数据格式，并不是一个消息。而geometry_msgs/TransformStamped.msg是一个message,它依赖于ROS，与语言无关，也即是无论何种语言，C++、Python、Java等等，都可以发送该消息。</p>
+<h2 id="33-数据转换"><a class="markdownIt-Anchor" href="#33-数据转换"></a> 3.3. 数据转换</h2>
+<p><img src= "/img/private/loading-4.gif" data-src="https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/tf_translate.png" alt="img" /></p>
+<p>在TF里有可能会遇到各种各样数据的转换，例如常见的四元数、旋转矩阵、欧拉角这三种数据之间的转换。tf in roscpp给了我们解决该问题的函数。详细源码在我们教学课程的代码包中。 首先在tf中与数据转化的数据都类型都包含在<code>#include</code>头文件中，我们将与数据转换相关API都存在tf_demo中的coordinate_transformation.cpp当中，其中列表如下：</p>
+<h2 id="34-第1部分定义空间点和空间向量"><a class="markdownIt-Anchor" href="#34-第1部分定义空间点和空间向量"></a> 3.4. 第1部分定义空间点和空间向量</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">编号</th>
+<th style="text-align:center">函数名称</th>
+<th style="text-align:center">函数功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1.1</td>
+<td style="text-align:center">tfScalar::tfDot(const Vector3 &amp;v1, const Vector3 &amp;v2)</td>
+<td style="text-align:center">计算两个向量的点积</td>
+</tr>
+<tr>
+<td style="text-align:center">1.2</td>
+<td style="text-align:center">tfScalar length()</td>
+<td style="text-align:center">计算向量的模</td>
+</tr>
+<tr>
+<td style="text-align:center">1.3</td>
+<td style="text-align:center">Vector3 &amp;normalize()</td>
+<td style="text-align:center">求与已知向量同方向的单位向量</td>
+</tr>
+<tr>
+<td style="text-align:center">1.4</td>
+<td style="text-align:center">tfScalar::tfAngle(const Vector3 &amp;v1, const Vector3 &amp;v2)</td>
+<td style="text-align:center">计算两个向量的夹角</td>
+</tr>
+<tr>
+<td style="text-align:center">1.5</td>
+<td style="text-align:center">tfScale::tfDistance(const Vector3 &amp;v1, const Vector3 &amp;v2)</td>
+<td style="text-align:center">计算两个向量的距离</td>
+</tr>
+<tr>
+<td style="text-align:center">1.6</td>
+<td style="text-align:center">tfScale::tfCross(const Vector3 &amp;v1,const Vector3 &amp;v2)</td>
+<td style="text-align:center">计算两个向量的乘积</td>
+</tr>
+</tbody>
+</table>
+<p>示例代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;ros&#x2F;ros.h&gt;</span><br><span class="line">#include &lt;tf&#x2F;tf.h&gt;</span><br><span class="line">&#x2F;&#x2F;退出用：ctrl+z</span><br><span class="line">int main(int argc, char** argv)&#123;</span><br><span class="line">&#x2F;&#x2F;初始化</span><br><span class="line">ros::init(argc, argv, &quot;coordinate_transformation&quot;);</span><br><span class="line">ros::NodeHandle node;</span><br><span class="line">tf::Vector3 v1(1,1,1);</span><br><span class="line">tf::Vector3 v2(1,0,1);</span><br><span class="line">&#x2F;&#x2F;第1部分，定义空间点和空间向量</span><br><span class="line">std::cout&lt;&lt;&quot;第1部分，定义空间点和空间向量&quot;&lt;&lt;std::endl;</span><br><span class="line">&#x2F;&#x2F;1.1 计算两个向量的点积</span><br><span class="line">std::cout&lt;&lt;&quot;向量v1:&quot;&lt;&lt;&quot;(&quot;&lt;&lt;v1[0]&lt;&lt;&quot;,&quot;&lt;&lt;v1[1]&lt;&lt;&quot;,&quot;&lt;&lt;v1[2]&lt;&lt;&quot;),&quot;;</span><br><span class="line">std::cout&lt;&lt;&quot;向量v2:&quot;&lt;&lt;&quot;(&quot;&lt;&lt;v2[0]&lt;&lt;&quot;,&quot;&lt;&lt;v2[1]&lt;&lt;&quot;,&quot;&lt;&lt;v2[2]&lt;&lt;&quot;)&quot;&lt;&lt;std::endl;</span><br><span class="line">std::cout&lt;&lt;&quot;两个向量的点积：&quot;&lt;&lt;tfDot(v1,v2)&lt;&lt;std::endl;</span><br><span class="line">&#x2F;&#x2F;1.2 计算向量的模</span><br><span class="line">std::cout&lt;&lt;&quot;向量v2的模值:&quot;&lt;&lt;v2.length()&lt;&lt;std::endl;</span><br><span class="line">&#x2F;&#x2F;1.3 求与已知向量同方向的单位向量</span><br><span class="line">tf::Vector3 v3;</span><br><span class="line">v3&#x3D;v2.normalize();</span><br><span class="line">std::cout&lt;&lt;&quot;与向量v2的同方向的单位向量v3:&quot;&lt;&lt;&quot;(&quot;&lt;&lt;v3[0]&lt;&lt;&quot;,&quot;&lt;&lt;v3[1]&lt;&lt;&quot;,&quot;&lt;&lt;v3[2]&lt;&lt;&quot;)&quot;&lt;&lt;std::endl;</span><br><span class="line">&#x2F;&#x2F;1.4 计算两个向量的夹角</span><br><span class="line">std::cout&lt;&lt;&quot;两个向量的夹角(弧度):&quot;&lt;&lt;tfAngle(v1,v2)&lt;&lt;std::endl;</span><br><span class="line">&#x2F;&#x2F;1.5 计算两个向量的距离</span><br><span class="line">std::cout&lt;&lt;&quot;两个向量的距离:&quot;&lt;&lt;tfDistance2(v1,v2)&lt;&lt;std::endl;</span><br><span class="line">&#x2F;&#x2F;1.6 计算两个向量的乘积</span><br><span class="line">tf::Vector3 v4;</span><br><span class="line">v4&#x3D;tfCross(v1,v2);</span><br><span class="line">std::cout&lt;&lt;&quot;两个向量的乘积v4:&quot;&lt;&lt;&quot;(&quot;&lt;&lt;v4[0]&lt;&lt;&quot;,&quot;&lt;&lt;v4[1]&lt;&lt;&quot;,&quot;&lt;&lt;v4[2]&lt;&lt;&quot;)&quot;&lt;&lt;std::endl;</span><br><span class="line">return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="35-第2部分定义四元数"><a class="markdownIt-Anchor" href="#35-第2部分定义四元数"></a> 3.5. 第2部分定义四元数</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">编号</th>
+<th style="text-align:center">函数名称</th>
+<th style="text-align:center">函数功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">2.1</td>
+<td style="text-align:center">setRPY(const tfScalar&amp; yaw, const stScalar &amp;pitch, const tfScalar &amp;roll)</td>
+<td style="text-align:center">由欧拉角计算四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">2.2</td>
+<td style="text-align:center">Vector3 getAxis()</td>
+<td style="text-align:center">由四元数得到旋转轴</td>
+</tr>
+<tr>
+<td style="text-align:center">2.3</td>
+<td style="text-align:center">setRotation(const Vector3 &amp;axis, const tfScalar&amp; angle)</td>
+<td style="text-align:center">已知旋转轴和旋转角估计四元数</td>
+</tr>
+</tbody>
+</table>
+<p>示例代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;ros&#x2F;ros.h&gt;</span><br><span class="line">#include &lt;tf&#x2F;tf.h&gt;</span><br><span class="line">&#x2F;&#x2F;退出用：ctrl+z</span><br><span class="line">int main(int argc, char** argv)&#123;</span><br><span class="line">&#x2F;&#x2F;初始化</span><br><span class="line">ros::init(argc, argv, &quot;coordinate_transformation&quot;);</span><br><span class="line">ros::NodeHandle node;</span><br><span class="line">std::cout&lt;&lt;&quot;第2部分，定义四元数&quot;&lt;&lt;std::endl;</span><br><span class="line">&#x2F;&#x2F;2.1 由欧拉角计算四元数</span><br><span class="line">tfScalar yaw,pitch,roll;</span><br><span class="line">yaw&#x3D;0;pitch&#x3D;0;roll&#x3D;0;</span><br><span class="line">std::cout&lt;&lt;&quot;欧拉角rpy(&quot;&lt;&lt;roll&lt;&lt;&quot;,&quot;&lt;&lt;pitch&lt;&lt;&quot;,&quot;&lt;&lt;yaw&lt;&lt;&quot;)&quot;;</span><br><span class="line">tf::Quaternion q;</span><br><span class="line">q.setRPY(yaw,pitch,roll);</span><br><span class="line">std::cout&lt;&lt;&quot;，转化到四元数q:&quot;&lt;&lt;&quot;(&quot;&lt;&lt;q[3]&lt;&lt;&quot;,&quot;&lt;&lt;q[0]&lt;&lt;&quot;,&quot;&lt;&lt;q[1]&lt;&lt;&quot;,&quot;&lt;&lt;q[2]&lt;&lt;&quot;)&quot;&lt;&lt;std::endl;</span><br><span class="line">&#x2F;&#x2F;2.2 由四元数得到旋转轴</span><br><span class="line">tf::Vector3 v5;</span><br><span class="line">v5&#x3D;q.getAxis();</span><br><span class="line">std::cout&lt;&lt;&quot;四元数q的旋转轴v5&quot;&lt;&lt;&quot;(&quot;&lt;&lt;v5[0]&lt;&lt;&quot;,&quot;&lt;&lt;v5[1]&lt;&lt;&quot;,&quot;&lt;&lt;v5[2]&lt;&lt;&quot;)&quot;&lt;&lt;std::endl;</span><br><span class="line">&#x2F;&#x2F;2.3 由旋转轴和旋转角来估计四元数</span><br><span class="line">tf::Quaternion q2;</span><br><span class="line">q2.setRotation(v5,1.570796);</span><br><span class="line">std::cout&lt;&lt;&quot;旋转轴v5和旋转角度90度，转化到四元数q2:&quot;&lt;&lt;&quot;(&quot;&lt;&lt;q2[3]&lt;&lt;&quot;,&quot;&lt;&lt;q2[0]&lt;&lt;&quot;,&quot;&lt;&lt;q2[1]&lt;&lt;&quot;,&quot;&lt;&lt;q2[2]&lt;&lt;&quot;)&quot;&lt;&lt;std::endl;</span><br><span class="line">return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="36-第3部分定义旋转矩阵"><a class="markdownIt-Anchor" href="#36-第3部分定义旋转矩阵"></a> 3.6. 第3部分定义旋转矩阵</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">编号</th>
+<th style="text-align:center">函数名称</th>
+<th style="text-align:center">函数功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">3.1</td>
+<td style="text-align:center">setRotaion(const Quaternion &amp;q)</td>
+<td style="text-align:center">通过四元数得到旋转矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">3.2</td>
+<td style="text-align:center">getEulerYPR(tfScalar &amp;yaw, tfScalar &amp;pitch, tfScalar &amp;roll )</td>
+<td style="text-align:center">由旋转矩阵求欧拉角</td>
+</tr>
+</tbody>
+</table>
+<p>示例代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;ros&#x2F;ros.h&gt;</span><br><span class="line">#include &lt;tf&#x2F;tf.h&gt;</span><br><span class="line">&#x2F;&#x2F;退出用：ctrl+z</span><br><span class="line">int main(int argc, char** argv)&#123;</span><br><span class="line">&#x2F;&#x2F;初始化</span><br><span class="line">ros::init(argc, argv, &quot;coordinate_transformation&quot;);</span><br><span class="line">ros::NodeHandle node;</span><br><span class="line">&#x2F;&#x2F;第3部分，定义旋转矩阵</span><br><span class="line">std::cout&lt;&lt;&quot;第3部分，定义旋转矩阵&quot;&lt;&lt;std::endl;</span><br><span class="line">&#x2F;&#x2F;3.1 由旋转轴和旋转角来估计四元数</span><br><span class="line">tf::Quaternion q2(1,0，0,0）;</span><br><span class="line">tf::Matrix3x3 Matrix;</span><br><span class="line">tf::Vector3 v6,v7,v8;</span><br><span class="line">Matrix.setRotation(q2);</span><br><span class="line">v6&#x3D;Matrix[0];</span><br><span class="line">v7&#x3D;Matrix[1];</span><br><span class="line">v8&#x3D;Matrix[2];</span><br><span class="line">std::cout&lt;&lt;&quot;四元数q2对应的旋转矩阵M:&quot;&lt;&lt;v6[0]&lt;&lt;&quot;,&quot;&lt;&lt;v6[1]&lt;&lt;&quot;,&quot;&lt;&lt;v6[2]&lt;&lt;std::endl;</span><br><span class="line">std::cout&lt;&lt;&quot;                       &quot;&lt;&lt;v7[0]&lt;&lt;&quot;,&quot;&lt;&lt;v7[1]&lt;&lt;&quot;,&quot;&lt;&lt;v7[2]&lt;&lt;std::endl;</span><br><span class="line">std::cout&lt;&lt;&quot;                       &quot;&lt;&lt;v8[0]&lt;&lt;&quot;,&quot;&lt;&lt;v8[1]&lt;&lt;&quot;,&quot;&lt;&lt;v8[2]&lt;&lt;std::endl;</span><br><span class="line">&#x2F;&#x2F;3.2 通过旋转矩阵求欧拉角</span><br><span class="line">tfScalar m_yaw,m_pitch,m_roll;</span><br><span class="line">Matrix.getEulerYPR(m_yaw,m_pitch,m_roll);</span><br><span class="line">std::cout&lt;&lt;&quot;由旋转矩阵M,得到欧拉角rpy(&quot;&lt;&lt;m_roll&lt;&lt;&quot;,&quot;&lt;&lt;m_pitch&lt;&lt;&quot;,&quot;&lt;&lt;m_yaw&lt;&lt;&quot;)&quot;&lt;&lt;std::endl;</span><br><span class="line">return 0;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>此外，在tf_demo的教学包中，我们还提供常见的欧拉角与四元数的互换，详见Euler2Quaternion.cpp与Quaternion2Euler.cpp Euler2Quaternion.cpp</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;ros&#x2F;ros.h&gt;</span><br><span class="line">#include &lt;tf&#x2F;tf.h&gt;</span><br><span class="line">&#x2F;&#x2F;退出用：ctrl+z</span><br><span class="line">int main(int argc, char** argv)&#123;</span><br><span class="line">&#x2F;&#x2F;初始化</span><br><span class="line">  ros::init(argc, argv, &quot;Euler2Quaternion&quot;);</span><br><span class="line">  ros::NodeHandle node;</span><br><span class="line">  geometry_msgs::Quaternion q;</span><br><span class="line">  double roll,pitch,yaw;</span><br><span class="line">  while(ros::ok())</span><br><span class="line">  &#123;</span><br><span class="line">  &#x2F;&#x2F;输入一个相对原点的位置</span><br><span class="line">  std::cout&lt;&lt;&quot;输入的欧拉角：roll,pitch,yaw:&quot;;</span><br><span class="line">  std::cin&gt;&gt;roll&gt;&gt;pitch&gt;&gt;yaw;</span><br><span class="line">  &#x2F;&#x2F;输入欧拉角，转化成四元数在终端输出</span><br><span class="line"> q&#x3D;tf::createQuaternionMsgFromRollPitchYaw(roll,pitch,yaw);</span><br><span class="line">  &#x2F;&#x2F;ROS_INFO(&quot;输出的四元数为：w&#x3D;%d,x&#x3D;%d,y&#x3D;%d,z&#x3D;%d&quot;，q.w,q.x,q.y,q.z);</span><br><span class="line">  std::cout&lt;&lt;&quot;输出的四元数为：w&#x3D;&quot;&lt;&lt;q.w&lt;&lt;&quot;,x&#x3D;&quot;&lt;&lt;q.x&lt;&lt;&quot;,y&#x3D;&quot;&lt;&lt;q.y&lt;&lt;&quot;,z&#x3D;&quot;&lt;&lt;q.z&lt;&lt;std::endl;</span><br><span class="line">  ros::spinOnce();</span><br><span class="line">  &#125;</span><br><span class="line">  return 0;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>Quaternion2Euler.cpp</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;ros&#x2F;ros.h&gt;</span><br><span class="line">#include &quot;nav_msgs&#x2F;Odometry.h&quot;</span><br><span class="line">#include &lt;tf&#x2F;tf.h&gt;</span><br><span class="line">&#x2F;&#x2F;退出用：ctrl+z</span><br><span class="line">int main(int argc, char** argv)&#123;</span><br><span class="line">&#x2F;&#x2F;初始化</span><br><span class="line">  ros::init(argc, argv, &quot;Quaternion2Euler&quot;);</span><br><span class="line">  ros::NodeHandle node;</span><br><span class="line">  nav_msgs::Odometry position;</span><br><span class="line">  tf::Quaternion RQ2;  </span><br><span class="line">  double roll,pitch,yaw;</span><br><span class="line">  while(ros::ok())</span><br><span class="line">  &#123;</span><br><span class="line">  &#x2F;&#x2F;输入一个相对原点的位置</span><br><span class="line">  std::cout&lt;&lt;&quot;输入的四元数：w,x,y,z:&quot;;</span><br><span class="line">  std::cin&gt;&gt;position.pose.pose.orientation.w&gt;&gt;position.pose.pose.orientation.x&gt;&gt;position.pose.pose.orientation.y&gt;&gt;position.pose.pose.orientation.z;</span><br><span class="line">  &#x2F;&#x2F;输入四元数，转化成欧拉角数在终端输出</span><br><span class="line">  tf::quaternionMsgToTF(position.pose.pose.orientation,RQ2);  </span><br><span class="line"> &#x2F;&#x2F; tf::Vector3 m_vector3; 方法2</span><br><span class="line"> &#x2F;&#x2F; m_vector3&#x3D;RQ2.getAxis();</span><br><span class="line">  tf::Matrix3x3(RQ2).getRPY(roll,pitch,yaw);  </span><br><span class="line">  std::cout&lt;&lt;&quot;输出的欧拉角为：roll&#x3D;&quot;&lt;&lt;roll&lt;&lt;&quot;,pitch&#x3D;&quot;&lt;&lt;pitch&lt;&lt;&quot;,yaw&#x3D;&quot;&lt;&lt;yaw&lt;&lt;std::endl;</span><br><span class="line">  &#x2F;&#x2F;std::cout&lt;&lt;&quot;输出欧拉角为：roll&#x3D;&quot;&lt;&lt;m_vector3[0]&lt;&lt;&quot;,pitch&#x3D;&quot;&lt;&lt;m_vector3[1]&lt;&lt;&quot;,yaw&#x3D;&quot;&lt;&lt;m_vector3[2]&lt;&lt;std::endl;</span><br><span class="line">  ros::spinOnce();</span><br><span class="line">  &#125;</span><br><span class="line">  return 0;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="37-tf类"><a class="markdownIt-Anchor" href="#37-tf类"></a> 3.7. TF类</h2>
+<h2 id="38-tftransformbroadcaster类"><a class="markdownIt-Anchor" href="#38-tftransformbroadcaster类"></a> 3.8. tf::TransformBroadcaster类</h2>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">transformBroadcaster()</span><br><span class="line">void sendTransform(const StampedTransform &amp;transform)</span><br><span class="line">void sendTransform(const std::vector&lt;StampedTransform&gt; &amp;transforms)</span><br><span class="line">void sendTransform(const geometry_msgs::TransformStamped &amp;transform)</span><br><span class="line">void sendTransform(const std::vector&lt;geometry_msgs::TransformStamped&gt; &amp;transforms)</span><br></pre></td></tr></table></figure>
+<p>这个类在前面讲TF树的时候提到过，这个broadcaster就是一个publisher,而sendTransform的作用是来封装publish的函数。在实际的使用中，我们需要在某个Node中构建tf::TransformBroadcaster类，然后调用sendTransform(),将transform发布到<code>/tf</code>的一段transform上。<code>/tf</code>里的transform为我们重载了多种不同的函数类型。在我们的tf_demo教学包当中提供了相关的示例代码tf.broadcaster.cpp，具体如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;ros&#x2F;ros.h&gt;</span><br><span class="line">#include &lt;tf&#x2F;transform_broadcaster.h&gt;</span><br><span class="line">#include &lt;tf&#x2F;tf.h&gt;</span><br><span class="line">&#x2F;&#x2F;退出用：ctrl+z</span><br><span class="line">int main(int argc, char** argv)&#123;</span><br><span class="line">&#x2F;&#x2F;初始化</span><br><span class="line">  ros::init(argc, argv, &quot;tf_broadcaster&quot;);</span><br><span class="line">  ros::NodeHandle node;</span><br><span class="line">  static tf::TransformBroadcaster br;</span><br><span class="line">  tf::Transform transform;</span><br><span class="line">  &#x2F;&#x2F;geometry_msgs::Quaternion qw;</span><br><span class="line">  tf::Quaternion q;</span><br><span class="line">  &#x2F;&#x2F;定义初始坐标和角度</span><br><span class="line">  double roll&#x3D;0,pitch&#x3D;0,yaw&#x3D;0,x&#x3D;1.0,y&#x3D;2.0,z&#x3D;3.0;</span><br><span class="line">  ros::Rate rate(1);</span><br><span class="line">  while(ros::ok())</span><br><span class="line">  &#123;</span><br><span class="line">  yaw+&#x3D;0.1;&#x2F;&#x2F;每经过一秒开始一次变换</span><br><span class="line">  &#x2F;&#x2F;输入欧拉角，转化成四元数在终端输出</span><br><span class="line">  q.setRPY(roll,pitch,yaw);</span><br><span class="line">      &#x2F;&#x2F;qw&#x3D;tf::createQuaternionMsgFromRollPitchYaw(roll,pitch,yaw);方法2</span><br><span class="line">  transform.setOrigin(tf::Vector3(x,y,z));</span><br><span class="line">  transform.setRotation(q);</span><br><span class="line">  std::cout&lt;&lt;&quot;发布tf变换：sendTransform函数&quot;&lt;&lt;std::endl;</span><br><span class="line">  br.sendTransform(tf::StampedTransform(transform,ros::Time::now(),&quot;base_link&quot;,&quot;link1&quot;));</span><br><span class="line">  std::cout&lt;&lt;&quot;输出的四元数为：w&#x3D;&quot;&lt;&lt;q[3]&lt;&lt;&quot;,x&#x3D;&quot;&lt;&lt;q[0]&lt;&lt;&quot;,y&#x3D;&quot;&lt;&lt;q[1]&lt;&lt;&quot;,z&#x3D;&quot;&lt;&lt;q[2]&lt;&lt;std::endl;</span><br><span class="line">  &#x2F;&#x2F;  std::cout&lt;&lt;&quot;输出的四元数为：w&#x3D;&quot;&lt;&lt;qw.w&lt;&lt;&quot;,x&#x3D;&quot;&lt;&lt;qw.x&lt;&lt;&quot;,y&#x3D;&quot;&lt;&lt;qw.y&lt;&lt;&quot;,z&#x3D;&quot;&lt;&lt;qw.z&lt;&lt;std::endl;</span><br><span class="line">  rate.sleep();</span><br><span class="line">  ros::spinOnce();</span><br><span class="line">  &#125;</span><br><span class="line">  return 0;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="39-tftransformlistener类"><a class="markdownIt-Anchor" href="#39-tftransformlistener类"></a> 3.9. tf::TransformListener类</h2>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">void lookupTranform(const std::string &amp;target_frame,const std::string &amp;source_frame,const ros::Time &amp;time,StampedTransform &amp;transform)const</span><br><span class="line">bool canTransform()</span><br><span class="line">bool waitForTransform()const</span><br></pre></td></tr></table></figure>
+<p>上一个类是向<code>/tf</code>上发的类，那么这一个就是从<code>/tf</code>上接收的类。首先看lookuptransform()函数，第一个参数是目标坐标系，第二个参数为源坐标系，也即是得到从源坐标系到目标坐标系之间的转换关系，第三个参数为查询时刻，第四个参数为存储转换关系的位置。值得注意，第三个参数通常用<code>ros::Time（0）</code>,这个表示为最新的坐标转换关系，而<code>ros::time::now</code>则会因为收发延迟的原因，而不能正确获取当前最新的坐标转换关系。canTransform()是用来判断两个transform之间是否连通，waitForTransform()const是用来等待某两个transform之间的连通，在我们的tf_demo教学包当中提供了相关的示例代码tf_listerner.cpp，具体如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;ros&#x2F;ros.h&gt;</span><br><span class="line">#include &lt;tf&#x2F;transform_listener.h&gt;</span><br><span class="line">#include &lt;geometry_msgs&#x2F;Twist.h&gt;</span><br><span class="line">int main(int argc, char** argv)&#123;</span><br><span class="line">  ros::init(argc, argv, &quot;tf_listener&quot;);</span><br><span class="line">  ros::NodeHandle node;</span><br><span class="line">  tf::TransformListener listener;</span><br><span class="line">  &#x2F;&#x2F;1. 阻塞直到frame相通</span><br><span class="line">  std::cout&lt;&lt;&quot;1. 阻塞直到frame相通&quot;&lt;&lt;std::endl;</span><br><span class="line">  listener.waitForTransform(&quot;&#x2F;base_link&quot;,&quot;link1&quot;,ros::Time(0),ros::Duration(4.0));</span><br><span class="line">  ros::Rate rate(1);</span><br><span class="line">  while (node.ok())&#123;</span><br><span class="line">tf::StampedTransform transform;</span><br><span class="line">try&#123;</span><br><span class="line">  &#x2F;&#x2F;2. 监听对应的tf,返回平移和旋转</span><br><span class="line"> std::cout&lt;&lt;&quot;2. 监听对应的tf,返回平移和旋转&quot;&lt;&lt;std::endl;</span><br><span class="line">  listener.lookupTransform(&quot;&#x2F;base_link&quot;, &quot;&#x2F;link1&quot;,</span><br><span class="line">                           ros::Time(0), transform);</span><br><span class="line">                           &#x2F;&#x2F;ros::Time(0)表示最近的一帧坐标变换，不能写成ros::Time::now()</span><br><span class="line">&#125;</span><br><span class="line">catch (tf::TransformException &amp;ex) &#123;</span><br><span class="line">  ROS_ERROR(&quot;%s&quot;,ex.what());</span><br><span class="line">  ros::Duration(1.0).sleep();</span><br><span class="line">  continue;</span><br><span class="line">&#125;</span><br><span class="line">std::cout&lt;&lt;&quot;输出的位置坐标：x&#x3D;&quot;&lt;&lt;transform.getOrigin().x()&lt;&lt;&quot;,y&#x3D;&quot;&lt;&lt;transform.getOrigin().y()&lt;&lt;&quot;,z&#x3D;&quot;&lt;&lt;transform.getOrigin().z()&lt;&lt;std::endl;</span><br><span class="line">std::cout&lt;&lt;&quot;输出的旋转四元数：w&#x3D;&quot;&lt;&lt;transform.getRotation().getW()&lt;&lt;&quot;,x&#x3D;&quot;&lt;&lt;transform.getRotation().getX()&lt;&lt;</span><br><span class="line">&quot;,y&#x3D;&quot;&lt;&lt;transform.getRotation().getY()&lt;&lt;&quot;,z&#x3D;&quot;&lt;&lt;transform.getRotation().getZ()&lt;&lt;std::endl;</span><br><span class="line">rate.sleep();</span><br><span class="line">  &#125;</span><br><span class="line">  return 0;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h1 id="4-tf-in-python"><a class="markdownIt-Anchor" href="#4-tf-in-python"></a> 4. tf in python</h1>
+<h2 id="41-简介"><a class="markdownIt-Anchor" href="#41-简介"></a> 4.1. 简介</h2>
+<p>我们知道tf中不仅有C<ins>的接口，也有Python的接口。相比C</ins>，tf在Python中的具体实现相对简单好用。</p>
+<h2 id="42-数据类型"><a class="markdownIt-Anchor" href="#42-数据类型"></a> 4.2. 数据类型</h2>
+<p>TF的相关数据类型，<strong>向量</strong>、<strong>点</strong>、<strong>四元数</strong>、<strong>矩阵</strong>都可以表示成类似数组形式，就是它们都可以用<strong>Tuple</strong>，<strong>List</strong>，<strong>Numpy</strong>,  <strong>Array</strong>来表示。<br />
+例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">t &#x3D; (1.0,1.5,0) #平移</span><br><span class="line">q &#x3D; [1,0,0,0] #四元数</span><br><span class="line">m &#x3D; numpy.identity(3) #旋转矩阵</span><br></pre></td></tr></table></figure>
+<p>第一个平移数据使用Tuple表示的，同时也可以用List表示成t=[1.0,1.5,0],也能用numpy.array(1.0,1.5,0)来表示都是可以的。<strong>这些数据类型没有特殊对应，全部是通用的，所以这里也就没有了各种数据类型的转换的麻烦。</strong></p>
+<h2 id="43-库"><a class="markdownIt-Anchor" href="#43-库"></a> 4.3. 库</h2>
+<h2 id="44-tftransformations"><a class="markdownIt-Anchor" href="#44-tftransformations"></a> 4.4. tf.transformations</h2>
+<p>基本数学运算函数</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">函数</th>
+<th style="text-align:center">注释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">euler_matrix(ai,aj,ak,axes=‘sxyz’)</td>
+<td style="text-align:center">欧拉角到矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">eulaer_form_matrix(matrix,axes=‘sxyz’)</td>
+<td style="text-align:center">矩阵到欧拉角</td>
+</tr>
+<tr>
+<td style="text-align:center">eular_from_quaternion(quaternion,axes=‘sxyz’)</td>
+<td style="text-align:center">四元数到欧拉角</td>
+</tr>
+<tr>
+<td style="text-align:center">quaternion_form_euler(ai,aj,ak,axes=‘sxyz’)</td>
+<td style="text-align:center">欧拉角到四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">quaternion_matrix(quaternion)</td>
+<td style="text-align:center">四元数到矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">quaternion_form_matrix(matrix)</td>
+<td style="text-align:center">矩阵到四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">…</td>
+<td style="text-align:center">…</td>
+</tr>
+</tbody>
+</table>
+<p>使用该函数库时候，首先<code>import tf</code>，tf.transformations给我们提供了<strong>一些基本的数学运算函数</strong>如上，使用起来非常方便。在tf_demo中教学包当中，我们列举了一些tf.transformations常见的API和示例代码，具详见下表。</p>
+<h3 id="441-第1部分定义空间点和空间向量"><a class="markdownIt-Anchor" href="#441-第1部分定义空间点和空间向量"></a> 4.4.1. 第1部分，定义空间点和空间向量</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">编号</th>
+<th style="text-align:center">函数名称</th>
+<th style="text-align:center">函数功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1.1</td>
+<td style="text-align:center">tf.transformations.random_quaternion(rand=None)</td>
+<td style="text-align:center">返回均匀随机单位四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">1.2</td>
+<td style="text-align:center">tf.transformations.random_rotation_matrix(rand=None)</td>
+<td style="text-align:center">返回均匀随机单位旋转矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">1.3</td>
+<td style="text-align:center">tf.transformations.random_vector(size)</td>
+<td style="text-align:center">返回均匀随机单位向量</td>
+</tr>
+<tr>
+<td style="text-align:center">1.4</td>
+<td style="text-align:center">tf.transformations.translation_matrix(v)</td>
+<td style="text-align:center">通过向量来求旋转矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">1.5</td>
+<td style="text-align:center">tf.transformations.translation_from_matrix(m)</td>
+<td style="text-align:center">通过旋转矩阵来求向量</td>
+</tr>
+</tbody>
+</table>
+<h3 id="442-第2部分定义四元数"><a class="markdownIt-Anchor" href="#442-第2部分定义四元数"></a> 4.4.2. 第2部分，定义四元数</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">编号</th>
+<th style="text-align:center">函数名称</th>
+<th style="text-align:center">函数功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">2.1</td>
+<td style="text-align:center">tf.transformations.quaternion_about_axis(angle axis)</td>
+<td style="text-align:center">通过旋转轴和旋转角返回四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">2.2</td>
+<td style="text-align:center">tf.transformations.quaternion_conjugate(quaternion)</td>
+<td style="text-align:center">返回四元数的共轭</td>
+</tr>
+<tr>
+<td style="text-align:center">2.3</td>
+<td style="text-align:center">tf.transformations.quaternion_from_euler(ai,aj,ak, axes’ryxz’)</td>
+<td style="text-align:center">从欧拉角和旋转轴，求四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">2.4</td>
+<td style="text-align:center">tf.transformations.quaternion_from_matrix(matrix)</td>
+<td style="text-align:center">从旋转矩阵中，返回四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">2.5</td>
+<td style="text-align:center">tf.transformations.quaternion_multiply(quaternion1,quaternion2)</td>
+<td style="text-align:center">两个四元数相乘</td>
+</tr>
+</tbody>
+</table>
+<h3 id="443-第3部分定义四元数"><a class="markdownIt-Anchor" href="#443-第3部分定义四元数"></a> 4.4.3. 第3部分，定义四元数</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">编号</th>
+<th style="text-align:center">函数名称</th>
+<th style="text-align:center">函数功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">3.1</td>
+<td style="text-align:center">tf.transformations.euler_matrix(ai,aj,ak,axes=‘xyz’)</td>
+<td style="text-align:center">由欧拉角和旋转轴返回旋转矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">3.2</td>
+<td style="text-align:center">tf.transformations.euler_from_matrix(matrix)</td>
+<td style="text-align:center">由旋转矩阵和特定的旋转轴返回欧拉角</td>
+</tr>
+<tr>
+<td style="text-align:center">3.3</td>
+<td style="text-align:center">tf.transformations.euler_from_quaternion(quaternion)</td>
+<td style="text-align:center">由四元数和特定的轴得到欧拉角</td>
+</tr>
+</tbody>
+</table>
+<p>示例代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python  </span><br><span class="line"># -*- coding:utf-8 -*-  </span><br><span class="line">import rospy  </span><br><span class="line">import math  </span><br><span class="line">import tf  </span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:  </span><br><span class="line">    rospy.init_node(&#39;py_coordinate_transformation&#39;)</span><br><span class="line">#第1部分，定义空间点和空间向量</span><br><span class="line">    print &#39;第1部分，定义空间点和空间向量&#39;</span><br><span class="line">#1.1 返回均匀随机单位四元数</span><br><span class="line">    q&#x3D;tf.transformations.random_quaternion(rand&#x3D;None)</span><br><span class="line">    print &#39;定义均匀随机四元数：&#39;</span><br><span class="line">    print q</span><br><span class="line">#1.2 返回均匀随机单位旋转矩阵</span><br><span class="line">    m&#x3D;tf.transformations.random_rotation_matrix(rand&#x3D;None)</span><br><span class="line">    print &#39;定义均匀随机单位旋转矩阵：&#39;</span><br><span class="line">    print m</span><br><span class="line">#1.3 返回均匀随机单位向量</span><br><span class="line">    v&#x3D;tf.transformations.random_vector(3)</span><br><span class="line">    print &#39;定义均匀随机单位向量：&#39;</span><br><span class="line">    print v</span><br><span class="line">#1.4 通过向量来求旋转矩阵</span><br><span class="line">    v_m&#x3D;tf.transformations.translation_matrix(v)</span><br><span class="line">    print &#39;通过向量来求旋转矩阵：&#39;</span><br><span class="line">    print v_m</span><br><span class="line">#1.5 通过旋转矩阵来求向量</span><br><span class="line">    m_v&#x3D;tf.transformations.translation_from_matrix(m)</span><br><span class="line">    print &#39;通过旋转矩阵来求向量：&#39;</span><br><span class="line">    print  m_v</span><br><span class="line">#第2部分，定义四元数</span><br><span class="line">    print &#39;第2部分，定义四元数&#39;</span><br><span class="line">#2.1 通过旋转轴和旋转角返回四元数</span><br><span class="line">    axis_q&#x3D;tf.transformations.quaternion_about_axis(0.123, (1, 0, 0))</span><br><span class="line">    print &#39;通过旋转轴和旋转角返回四元数：&#39;</span><br><span class="line">    print  axis_q</span><br><span class="line">#2.2 返回四元数的共轭</span><br><span class="line">    n_q&#x3D;tf.transformations.quaternion_conjugate(q)</span><br><span class="line">    print &#39;返回四元数q的共轭：&#39;</span><br><span class="line">    print  n_q</span><br><span class="line">#2.3 从欧拉角和旋转轴，求四元数</span><br><span class="line">    o_q&#x3D;tf.transformations.quaternion_from_euler(1, 2, 3, &#39;ryxz&#39;)</span><br><span class="line">    print &#39;从欧拉角和旋转轴，求四元数：&#39;</span><br><span class="line">    print  o_q    </span><br><span class="line">#2.4 从旋转矩阵中，返回四元数</span><br><span class="line">    m_q&#x3D;tf.transformations.quaternion_from_matrix(m)</span><br><span class="line">    print &#39;从旋转矩阵中，返回四元数：&#39;</span><br><span class="line">    print  m_q </span><br><span class="line">#2.5 两个四元数相乘</span><br><span class="line">    qxq&#x3D;tf.transformations.quaternion_multiply(q,n_q)</span><br><span class="line">    print &#39;两个四元数相乘&#39;</span><br><span class="line">    print  qxq   </span><br><span class="line">&#96;</span><br></pre></td></tr></table></figure>
+<h2 id="45-tf类"><a class="markdownIt-Anchor" href="#45-tf类"></a> 4.5. TF类</h2>
+<h3 id="451-tftransformlistener类"><a class="markdownIt-Anchor" href="#451-tftransformlistener类"></a> 4.5.1. tf.TransformListener类</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">方法</th>
+<th style="text-align:center">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">canTransform(self,target_frame,source_frame,time)</td>
+<td style="text-align:center">frame是否相通</td>
+</tr>
+<tr>
+<td style="text-align:center">waitForTransform(self,target_frame,source_frame,time,timeout)</td>
+<td style="text-align:center">阻塞直到frame相通</td>
+</tr>
+<tr>
+<td style="text-align:center">lookup Transform(self,target_frame,source_frame,time)</td>
+<td style="text-align:center">查看相对的tf，返回（trans，quat）</td>
+</tr>
+</tbody>
+</table>
+<p>tf.TransformListener类中主要包含以上三种方法，它的构造函数不需要填值。注意这里的time参数，依然是使用<code>rospy.Time(0)</code>而不是<code>rospy.Time.now()</code>.具体原因上节已经介绍，这里不再赘述。除了上述三种重要的方法，这个类中还有一些辅助用的方法如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">方法</th>
+<th style="text-align:center">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">chain(target_frame,target_time,source_frame,source_time,fixed_frame)</td>
+<td style="text-align:center">frame的连接关系</td>
+</tr>
+<tr>
+<td style="text-align:center">frameExists(self,frame_id)</td>
+<td style="text-align:center">frame是否存在</td>
+</tr>
+<tr>
+<td style="text-align:center">getFrameStrings(self)</td>
+<td style="text-align:center">返回所有tf的名称</td>
+</tr>
+<tr>
+<td style="text-align:center">fromTranslationRotation(translation,rotation)</td>
+<td style="text-align:center">根据平移和旋转返回4X4矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">transformPoint(target_frame,point_msg)</td>
+<td style="text-align:center">将PointStamped消息转换到新frame下</td>
+</tr>
+<tr>
+<td style="text-align:center">transformPose(target_frame,pose_msg)</td>
+<td style="text-align:center">将PoseStamped消息转换到新frame下</td>
+</tr>
+<tr>
+<td style="text-align:center">transformQuaternion(target_frame,quat_msg)</td>
+<td style="text-align:center">将QuaternionStamped…返回相同类型</td>
+</tr>
+<tr>
+<td style="text-align:center">…</td>
+<td style="text-align:center">…</td>
+</tr>
+</tbody>
+</table>
+<p>在<code>tf_demo</code>教学包当中的<code>scripts/py_tf_listerner.py</code>给出了示例程序，详见如下。</p>
+<p>py_tf_listerner.py</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python  </span><br><span class="line"># -*- coding:utf-8 -*-  </span><br><span class="line">import rospy  </span><br><span class="line">import math  </span><br><span class="line">import tf   </span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:  </span><br><span class="line">    rospy.init_node(&#39;py_tf_turtle&#39;)</span><br><span class="line">    listener &#x3D; tf.TransformListener() #TransformListener创建后就开始接受tf广播信息，最多可以缓存10s  目前存在的问题，是四个数值的顺序我还有点问题</span><br><span class="line">    rate &#x3D; rospy.Rate(1.0)  </span><br><span class="line">    #1. 阻塞直到frame相通</span><br><span class="line">    print &#39;1. 阻塞直到frame相通&#39;  </span><br><span class="line">    listener.waitForTransform(&quot;&#x2F;base_link&quot;, &quot;&#x2F;link1&quot;, rospy.Time(), rospy.Duration(4.0))</span><br><span class="line">    while not rospy.is_shutdown():  </span><br><span class="line">        try:  </span><br><span class="line">        #2. 监听对应的tf,返回平移和旋转</span><br><span class="line">            print &#39;2. 监听对应的tf,返回平移和旋转&#39;  </span><br><span class="line">            (trans,rot) &#x3D; listener.lookupTransform(&#39;&#x2F;base_link&#39;, &#39;&#x2F;link1&#39;, rospy.Time(0)) #rospy.Time(0)不表示0时刻的tf，而是指最近一帧tf </span><br><span class="line">        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):  </span><br><span class="line">            continue    </span><br><span class="line">        rospy.loginfo(&#39;距离原点的位置: x&#x3D;%f ,y&#x3D; %f，z&#x3D;%f \n 旋转四元数: w&#x3D;%f ,x&#x3D; %f，y&#x3D;%f z&#x3D;%f &#39;,trans[0],trans[1],trans[2],rot[0],rot[1],rot[2],rot[3])</span><br><span class="line">        #3. 判断两个frame是否相通</span><br><span class="line">        print &#39;3. 判断两个frame是否相通&#39;</span><br><span class="line">        if listener.canTransform(&#39;&#x2F;link1&#39;,&#39;&#x2F;base_link&#39;,rospy.Time(0)) :</span><br><span class="line">            print &#39;true&#39;</span><br><span class="line">        else :</span><br><span class="line">            print &#39;false&#39;</span><br><span class="line">        rate.sleep()</span><br></pre></td></tr></table></figure>
+<h3 id="452"><a class="markdownIt-Anchor" href="#452"></a> 4.5.2.</h3>
+<h3 id="453-tftransformbroadcaster类"><a class="markdownIt-Anchor" href="#453-tftransformbroadcaster类"></a> 4.5.3. tf.TransformBroadcaster类</h3>
+<p>类似的，我们介绍的是发布方，tf.TransformBroadcaster类。该类的构造函数也是不需要填值，成员函数有两个如下：</p>
+<ul>
+<li>sendTransform(translation,rotation,time,child,parent)#向/tf发布消息</li>
+<li>sendTransformMessage(transform)#向/tf发布消息</li>
+</ul>
+<p>第一个sendTransform()把transform的平移和旋转填好，打上时间戳，然后表示出从父到子的frame流，然后发向<code>/tf</code>的topic。第二种是发送transform已经封装好的Message给<code>/tf</code>，这两种不同的发送方式，功能是一致的。在<code>tf_demo</code>教学包当中的<code>scripts/py_tf_broadcaster.py</code>和<code>scripts/py_tf_broadcaster02.py</code>给出了示例程序，详见如下。</p>
+<p>py_tf_broadcaster.py</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python  </span><br><span class="line"># -*- coding:utf-8 -*-  </span><br><span class="line"></span><br><span class="line">import rospy  </span><br><span class="line">import math  </span><br><span class="line">import tf    </span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:  </span><br><span class="line">    rospy.init_node(&#39;py_tf_broadcaster&#39;)</span><br><span class="line">    print &#39;讲解tf.transformBroadcaster类&#39;</span><br><span class="line">    print &#39;第1种发布方式：sendTransform(translation,rotation,time,child,parent)&#39;</span><br><span class="line">#第一部分，发布sendTransform(translation,rotation,time,child,parent)</span><br><span class="line">    br &#x3D; tf.TransformBroadcaster()</span><br><span class="line">#输入相对原点的值和欧拉角</span><br><span class="line">    x&#x3D;1.0 </span><br><span class="line">    y&#x3D;2.0</span><br><span class="line">    z&#x3D;3.0  </span><br><span class="line">    roll&#x3D;0 </span><br><span class="line">    pitch&#x3D;0</span><br><span class="line">    yaw&#x3D;1.57 </span><br><span class="line">    rate &#x3D; rospy.Rate(1)</span><br><span class="line">    while not rospy.is_shutdown(): </span><br><span class="line">        yaw&#x3D;yaw+0.1   </span><br><span class="line">        br.sendTransform((x,y,z),  </span><br><span class="line">                     tf.transformations.quaternion_from_euler(roll,pitch,yaw),  </span><br><span class="line">                     rospy.Time.now(),  </span><br><span class="line">                     &quot;base_link&quot;,  </span><br><span class="line">                     &quot;link1&quot;)  #发布base_link到link1的平移和翻转   </span><br><span class="line">        rate.sleep()</span><br></pre></td></tr></table></figure>
+<p>py_tf_broadcaster02.py</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python  </span><br><span class="line"># -*- coding:utf-8 -*-  </span><br><span class="line"></span><br><span class="line">import rospy </span><br><span class="line">import geometry_msgs.msg</span><br><span class="line">import tf2_ros.transform_broadcaster</span><br><span class="line">import math  </span><br><span class="line">import tf   </span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:  </span><br><span class="line">    rospy.init_node(&#39;py_tf_broadcaster&#39;)</span><br><span class="line">    print &#39;讲解tf.transformBroadcaster类&#39;</span><br><span class="line">    print &#39;第2种发布方式：sendTransformMessage(transform)&#39;</span><br><span class="line">#第二部分，发布sendTransformMessage(transform)</span><br><span class="line">    m&#x3D;tf.TransformBroadcaster()</span><br><span class="line">    t &#x3D; geometry_msgs.msg.TransformStamped()</span><br><span class="line">    t.header.frame_id &#x3D; &#39;base_link&#39;</span><br><span class="line">    t.header.stamp &#x3D; rospy.Time(0)</span><br><span class="line">    t.child_frame_id &#x3D; &#39;link1&#39;</span><br><span class="line">    t.transform.translation.x &#x3D; 1</span><br><span class="line">    t.transform.translation.y &#x3D; 2</span><br><span class="line">    t.transform.translation.z &#x3D; 3</span><br><span class="line">    t.transform.rotation.w&#x3D;1</span><br><span class="line">    t.transform.rotation.x&#x3D;0</span><br><span class="line">    t.transform.rotation.y&#x3D;0</span><br><span class="line">    t.transform.rotation.z&#x3D;0</span><br><span class="line">#输入相对原点的值和欧拉角</span><br><span class="line">    rate &#x3D; rospy.Rate(1)</span><br><span class="line">    while not rospy.is_shutdown():</span><br><span class="line">        m.sendTransformMessage(t)</span><br><span class="line">        rate.sleep()</span><br></pre></td></tr></table></figure>
+<h2 id="46-tf相关工具命令"><a class="markdownIt-Anchor" href="#46-tf相关工具命令"></a> 4.6. TF相关工具命令</h2>
+<ol>
+<li>
+<p>根据当前的tf树创建一个pdf图：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ rosrun tf view_frames</span><br></pre></td></tr></table></figure>
+<p>这个工具首先订阅<code>/tf</code>，订阅5秒钟，根据这段时间接受到的tf信息，绘制成一张tf tree，然后创建成一个pdf图。</p>
+</li>
+<li>
+<p>查看当前的tf树：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ rosrun rqt_tf_tree rqt_tf_tree</span><br></pre></td></tr></table></figure>
+<p>该命令同样是查询tf tree的，但是与第一个命令的区别是该命令是动态的查询当前的tf tree,当前的任何变化都能当即看到，例如何时断开何时连接，捕捉到这些然后通过rqt插件显示出来。</p>
+</li>
+<li>
+<p>查看两个frame之间的变换关系：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ rosrun tf tf_echo[reference_frame][target_frame]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h1 id="5-tf-in-python"><a class="markdownIt-Anchor" href="#5-tf-in-python"></a> 5. tf in python</h1>
+<h2 id="51-简介"><a class="markdownIt-Anchor" href="#51-简介"></a> 5.1. 简介</h2>
+<p>我们知道tf中不仅有C<ins>的接口，也有Python的接口。相比C</ins>，tf在Python中的具体实现相对简单好用。</p>
+<h2 id="52-数据类型"><a class="markdownIt-Anchor" href="#52-数据类型"></a> 5.2. 数据类型</h2>
+<p>TF的相关数据类型，向量、点、四元数、矩阵都可以表示成类似数组形式，就是它们都可以用Tuple，List，Numpy Array来表示。<br />
+例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">t &#x3D; (1.0,1.5,0) #平移</span><br><span class="line">q &#x3D; [1,0,0,0] #四元数</span><br><span class="line">m &#x3D; numpy.identity(3) #旋转矩阵</span><br></pre></td></tr></table></figure>
+<p>第一个平移数据使用Tuple表示的，同时也可以用List表示成t=[1.0,1.5,0],也能用numpy.array(1.0,1.5,0)来表示都是可以的。这些数据类型没有特殊对应，全部是通用的，所以这里也就没有了各种数据类型的转换的麻烦。</p>
+<h2 id="53-tf库"><a class="markdownIt-Anchor" href="#53-tf库"></a> 5.3. TF库</h2>
+<h3 id="531-tftransformations"><a class="markdownIt-Anchor" href="#531-tftransformations"></a> 5.3.1. tf.transformations</h3>
+<p>基本数学运算函数</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">函数</th>
+<th style="text-align:center">注释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">euler_matrix(ai,aj,ak,axes=‘sxyz’)</td>
+<td style="text-align:center">欧拉角到矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">eulaer_form_matrix(matrix,axes=‘sxyz’)</td>
+<td style="text-align:center">矩阵到欧拉角</td>
+</tr>
+<tr>
+<td style="text-align:center">eular_from_quaternion(quaternion,axes=‘sxyz’)</td>
+<td style="text-align:center">四元数到欧拉角</td>
+</tr>
+<tr>
+<td style="text-align:center">quaternion_form_euler(ai,aj,ak,axes=‘sxyz’)</td>
+<td style="text-align:center">欧拉角到四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">quaternion_matrix(quaternion)</td>
+<td style="text-align:center">四元数到矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">quaternion_form_matrix(matrix)</td>
+<td style="text-align:center">矩阵到四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">…</td>
+<td style="text-align:center">…</td>
+</tr>
+</tbody>
+</table>
+<p>使用该函数库时候，首先<code>import tf</code>，tf.transformations给我们提供了一些基本的数学运算函数如上，使用起来非常方便。在tf_demo中教学包当中，我们列举了一些tf.transformations常见的API和示例代码，具详见下表。</p>
+<h3 id="532-第1部分定义空间点和空间向量"><a class="markdownIt-Anchor" href="#532-第1部分定义空间点和空间向量"></a> 5.3.2. 第1部分，定义空间点和空间向量</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">编号</th>
+<th style="text-align:center">函数名称</th>
+<th style="text-align:center">函数功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1.1</td>
+<td style="text-align:center">tf.transformations.random_quaternion(rand=None)</td>
+<td style="text-align:center">返回均匀随机单位四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">1.2</td>
+<td style="text-align:center">tf.transformations.random_rotation_matrix(rand=None)</td>
+<td style="text-align:center">返回均匀随机单位旋转矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">1.3</td>
+<td style="text-align:center">tf.transformations.random_vector(size)</td>
+<td style="text-align:center">返回均匀随机单位向量</td>
+</tr>
+<tr>
+<td style="text-align:center">1.4</td>
+<td style="text-align:center">tf.transformations.translation_matrix(v)</td>
+<td style="text-align:center">通过向量来求旋转矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">1.5</td>
+<td style="text-align:center">tf.transformations.translation_from_matrix(m)</td>
+<td style="text-align:center">通过旋转矩阵来求向量</td>
+</tr>
+</tbody>
+</table>
+<h3 id="533-第2部分定义四元数"><a class="markdownIt-Anchor" href="#533-第2部分定义四元数"></a> 5.3.3. 第2部分，定义四元数</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">编号</th>
+<th style="text-align:center">函数名称</th>
+<th style="text-align:center">函数功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">2.1</td>
+<td style="text-align:center">tf.transformations.quaternion_about_axis(angle axis)</td>
+<td style="text-align:center">通过旋转轴和旋转角返回四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">2.2</td>
+<td style="text-align:center">tf.transformations.quaternion_conjugate(quaternion)</td>
+<td style="text-align:center">返回四元数的共轭</td>
+</tr>
+<tr>
+<td style="text-align:center">2.3</td>
+<td style="text-align:center">tf.transformations.quaternion_from_euler(ai,aj,ak, axes’ryxz’)</td>
+<td style="text-align:center">从欧拉角和旋转轴，求四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">2.4</td>
+<td style="text-align:center">tf.transformations.quaternion_from_matrix(matrix)</td>
+<td style="text-align:center">从旋转矩阵中，返回四元数</td>
+</tr>
+<tr>
+<td style="text-align:center">2.5</td>
+<td style="text-align:center">tf.transformations.quaternion_multiply(quaternion1,quaternion2)</td>
+<td style="text-align:center">两个四元数相乘</td>
+</tr>
+</tbody>
+</table>
+<h3 id="534-第3部分定义四元数"><a class="markdownIt-Anchor" href="#534-第3部分定义四元数"></a> 5.3.4. 第3部分，定义四元数</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">编号</th>
+<th style="text-align:center">函数名称</th>
+<th style="text-align:center">函数功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">3.1</td>
+<td style="text-align:center">tf.transformations.euler_matrix(ai,aj,ak,axes=‘xyz’)</td>
+<td style="text-align:center">由欧拉角和旋转轴返回旋转矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">3.2</td>
+<td style="text-align:center">tf.transformations.euler_from_matrix(matrix)</td>
+<td style="text-align:center">由旋转矩阵和特定的旋转轴返回欧拉角</td>
+</tr>
+<tr>
+<td style="text-align:center">3.3</td>
+<td style="text-align:center">tf.transformations.euler_from_quaternion(quaternion)</td>
+<td style="text-align:center">由四元数和特定的轴得到欧拉角</td>
+</tr>
+</tbody>
+</table>
+<p>示例代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python  </span><br><span class="line"># -*- coding:utf-8 -*-  </span><br><span class="line">import rospy  </span><br><span class="line">import math  </span><br><span class="line">import tf  </span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:  </span><br><span class="line">    rospy.init_node(&#39;py_coordinate_transformation&#39;)</span><br><span class="line">#第1部分，定义空间点和空间向量</span><br><span class="line">    print &#39;第1部分，定义空间点和空间向量&#39;</span><br><span class="line">#1.1 返回均匀随机单位四元数</span><br><span class="line">    q&#x3D;tf.transformations.random_quaternion(rand&#x3D;None)</span><br><span class="line">    print &#39;定义均匀随机四元数：&#39;</span><br><span class="line">    print q</span><br><span class="line">#1.2 返回均匀随机单位旋转矩阵</span><br><span class="line">    m&#x3D;tf.transformations.random_rotation_matrix(rand&#x3D;None)</span><br><span class="line">    print &#39;定义均匀随机单位旋转矩阵：&#39;</span><br><span class="line">    print m</span><br><span class="line">#1.3 返回均匀随机单位向量</span><br><span class="line">    v&#x3D;tf.transformations.random_vector(3)</span><br><span class="line">    print &#39;定义均匀随机单位向量：&#39;</span><br><span class="line">    print v</span><br><span class="line">#1.4 通过向量来求旋转矩阵</span><br><span class="line">    v_m&#x3D;tf.transformations.translation_matrix(v)</span><br><span class="line">    print &#39;通过向量来求旋转矩阵：&#39;</span><br><span class="line">    print v_m</span><br><span class="line">#1.5 通过旋转矩阵来求向量</span><br><span class="line">    m_v&#x3D;tf.transformations.translation_from_matrix(m)</span><br><span class="line">    print &#39;通过旋转矩阵来求向量：&#39;</span><br><span class="line">    print  m_v</span><br><span class="line">#第2部分，定义四元数</span><br><span class="line">    print &#39;第2部分，定义四元数&#39;</span><br><span class="line">#2.1 通过旋转轴和旋转角返回四元数</span><br><span class="line">    axis_q&#x3D;tf.transformations.quaternion_about_axis(0.123, (1, 0, 0))</span><br><span class="line">    print &#39;通过旋转轴和旋转角返回四元数：&#39;</span><br><span class="line">    print  axis_q</span><br><span class="line">#2.2 返回四元数的共轭</span><br><span class="line">    n_q&#x3D;tf.transformations.quaternion_conjugate(q)</span><br><span class="line">    print &#39;返回四元数q的共轭：&#39;</span><br><span class="line">    print  n_q</span><br><span class="line">#2.3 从欧拉角和旋转轴，求四元数</span><br><span class="line">    o_q&#x3D;tf.transformations.quaternion_from_euler(1, 2, 3, &#39;ryxz&#39;)</span><br><span class="line">    print &#39;从欧拉角和旋转轴，求四元数：&#39;</span><br><span class="line">    print  o_q    </span><br><span class="line">#2.4 从旋转矩阵中，返回四元数</span><br><span class="line">    m_q&#x3D;tf.transformations.quaternion_from_matrix(m)</span><br><span class="line">    print &#39;从旋转矩阵中，返回四元数：&#39;</span><br><span class="line">    print  m_q </span><br><span class="line">#2.5 两个四元数相乘</span><br><span class="line">    qxq&#x3D;tf.transformations.quaternion_multiply(q,n_q)</span><br><span class="line">    print &#39;两个四元数相乘&#39;</span><br><span class="line">    print  qxq   </span><br><span class="line">&#96;</span><br></pre></td></tr></table></figure>
+<h2 id="54-tf类"><a class="markdownIt-Anchor" href="#54-tf类"></a> 5.4. TF类</h2>
+<h3 id="541-tftransformlistener类"><a class="markdownIt-Anchor" href="#541-tftransformlistener类"></a> 5.4.1. tf.TransformListener类</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">方法</th>
+<th style="text-align:center">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">canTransform(self,target_frame,source_frame,time)</td>
+<td style="text-align:center">frame是否相通</td>
+</tr>
+<tr>
+<td style="text-align:center">waitForTransform(self,target_frame,source_frame,time,timeout)</td>
+<td style="text-align:center">阻塞直到frame相通</td>
+</tr>
+<tr>
+<td style="text-align:center">lookup Transform(self,target_frame,source_frame,time)</td>
+<td style="text-align:center">查看相对的tf，返回（trans，quat）</td>
+</tr>
+</tbody>
+</table>
+<p>tf.TransformListener类中主要包含以上三种方法，它的构造函数不需要填值。注意这里的time参数，依然是使用<code>rospy.Time(0)</code>而不是<code>rospy.Time.now()</code>.具体原因上节已经介绍，这里不再赘述。除了上述三种重要的方法，这个类中还有一些辅助用的方法如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">方法</th>
+<th style="text-align:center">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">chain(target_frame,target_time,source_frame,source_time,fixed_frame)</td>
+<td style="text-align:center">frame的连接关系</td>
+</tr>
+<tr>
+<td style="text-align:center">frameExists(self,frame_id)</td>
+<td style="text-align:center">frame是否存在</td>
+</tr>
+<tr>
+<td style="text-align:center">getFrameStrings(self)</td>
+<td style="text-align:center">返回所有tf的名称</td>
+</tr>
+<tr>
+<td style="text-align:center">fromTranslationRotation(translation,rotation)</td>
+<td style="text-align:center">根据平移和旋转返回4X4矩阵</td>
+</tr>
+<tr>
+<td style="text-align:center">transformPoint(target_frame,point_msg)</td>
+<td style="text-align:center">将PointStamped消息转换到新frame下</td>
+</tr>
+<tr>
+<td style="text-align:center">transformPose(target_frame,pose_msg)</td>
+<td style="text-align:center">将PoseStamped消息转换到新frame下</td>
+</tr>
+<tr>
+<td style="text-align:center">transformQuaternion(target_frame,quat_msg)</td>
+<td style="text-align:center">将QuaternionStamped…返回相同类型</td>
+</tr>
+<tr>
+<td style="text-align:center">…</td>
+<td style="text-align:center">…</td>
+</tr>
+</tbody>
+</table>
+<p>在<code>tf_demo</code>教学包当中的<code>scripts/py_tf_listerner.py</code>给出了示例程序，详见如下。</p>
+<p>py_tf_listerner.py</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python  </span><br><span class="line"># -*- coding:utf-8 -*-  </span><br><span class="line">import rospy  </span><br><span class="line">import math  </span><br><span class="line">import tf   </span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:  </span><br><span class="line">    rospy.init_node(&#39;py_tf_turtle&#39;)</span><br><span class="line">    listener &#x3D; tf.TransformListener() #TransformListener创建后就开始接受tf广播信息，最多可以缓存10s  目前存在的问题，是四个数值的顺序我还有点问题</span><br><span class="line">    rate &#x3D; rospy.Rate(1.0)  </span><br><span class="line">    #1. 阻塞直到frame相通</span><br><span class="line">    print &#39;1. 阻塞直到frame相通&#39;  </span><br><span class="line">    listener.waitForTransform(&quot;&#x2F;base_link&quot;, &quot;&#x2F;link1&quot;, rospy.Time(), rospy.Duration(4.0))</span><br><span class="line">    while not rospy.is_shutdown():  </span><br><span class="line">        try:  </span><br><span class="line">        #2. 监听对应的tf,返回平移和旋转</span><br><span class="line">            print &#39;2. 监听对应的tf,返回平移和旋转&#39;  </span><br><span class="line">            (trans,rot) &#x3D; listener.lookupTransform(&#39;&#x2F;base_link&#39;, &#39;&#x2F;link1&#39;, rospy.Time(0)) #rospy.Time(0)不表示0时刻的tf，而是指最近一帧tf </span><br><span class="line">        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):  </span><br><span class="line">            continue    </span><br><span class="line">        rospy.loginfo(&#39;距离原点的位置: x&#x3D;%f ,y&#x3D; %f，z&#x3D;%f \n 旋转四元数: w&#x3D;%f ,x&#x3D; %f，y&#x3D;%f z&#x3D;%f &#39;,trans[0],trans[1],trans[2],rot[0],rot[1],rot[2],rot[3])</span><br><span class="line">        #3. 判断两个frame是否相通</span><br><span class="line">        print &#39;3. 判断两个frame是否相通&#39;</span><br><span class="line">        if listener.canTransform(&#39;&#x2F;link1&#39;,&#39;&#x2F;base_link&#39;,rospy.Time(0)) :</span><br><span class="line">            print &#39;true&#39;</span><br><span class="line">        else :</span><br><span class="line">            print &#39;false&#39;</span><br><span class="line">        rate.sleep()</span><br></pre></td></tr></table></figure>
+<h3 id="542"><a class="markdownIt-Anchor" href="#542"></a> 5.4.2.</h3>
+<h3 id="543-tftransformbroadcaster类"><a class="markdownIt-Anchor" href="#543-tftransformbroadcaster类"></a> 5.4.3. tf.TransformBroadcaster类</h3>
+<p>类似的，我们介绍的是发布方，tf.TransformBroadcaster类。该类的构造函数也是不需要填值，成员函数有两个如下：</p>
+<ul>
+<li>sendTransform(translation,rotation,time,child,parent)#向/tf发布消息</li>
+<li>sendTransformMessage(transform)#向/tf发布消息</li>
+</ul>
+<p>第一个sendTransform()把transform的平移和旋转填好，打上时间戳，然后表示出从父到子的frame流，然后发向<code>/tf</code>的topic。第二种是发送transform已经封装好的Message给<code>/tf</code>，这两种不同的发送方式，功能是一致的。在<code>tf_demo</code>教学包当中的<code>scripts/py_tf_broadcaster.py</code>和<code>scripts/py_tf_broadcaster02.py</code>给出了示例程序，详见如下。</p>
+<p>py_tf_broadcaster.py</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python  </span><br><span class="line"># -*- coding:utf-8 -*-  </span><br><span class="line"></span><br><span class="line">import rospy  </span><br><span class="line">import math  </span><br><span class="line">import tf    </span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:  </span><br><span class="line">    rospy.init_node(&#39;py_tf_broadcaster&#39;)</span><br><span class="line">    print &#39;讲解tf.transformBroadcaster类&#39;</span><br><span class="line">    print &#39;第1种发布方式：sendTransform(translation,rotation,time,child,parent)&#39;</span><br><span class="line">#第一部分，发布sendTransform(translation,rotation,time,child,parent)</span><br><span class="line">    br &#x3D; tf.TransformBroadcaster()</span><br><span class="line">#输入相对原点的值和欧拉角</span><br><span class="line">    x&#x3D;1.0 </span><br><span class="line">    y&#x3D;2.0</span><br><span class="line">    z&#x3D;3.0  </span><br><span class="line">    roll&#x3D;0 </span><br><span class="line">    pitch&#x3D;0</span><br><span class="line">    yaw&#x3D;1.57 </span><br><span class="line">    rate &#x3D; rospy.Rate(1)</span><br><span class="line">    while not rospy.is_shutdown(): </span><br><span class="line">        yaw&#x3D;yaw+0.1   </span><br><span class="line">        br.sendTransform((x,y,z),  </span><br><span class="line">                     tf.transformations.quaternion_from_euler(roll,pitch,yaw),  </span><br><span class="line">                     rospy.Time.now(),  </span><br><span class="line">                     &quot;base_link&quot;,  </span><br><span class="line">                     &quot;link1&quot;)  #发布base_link到link1的平移和翻转   </span><br><span class="line">        rate.sleep()</span><br></pre></td></tr></table></figure>
+<p>py_tf_broadcaster02.py</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python  </span><br><span class="line"># -*- coding:utf-8 -*-  </span><br><span class="line"></span><br><span class="line">import rospy </span><br><span class="line">import geometry_msgs.msg</span><br><span class="line">import tf2_ros.transform_broadcaster</span><br><span class="line">import math  </span><br><span class="line">import tf   </span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:  </span><br><span class="line">    rospy.init_node(&#39;py_tf_broadcaster&#39;)</span><br><span class="line">    print &#39;讲解tf.transformBroadcaster类&#39;</span><br><span class="line">    print &#39;第2种发布方式：sendTransformMessage(transform)&#39;</span><br><span class="line">#第二部分，发布sendTransformMessage(transform)</span><br><span class="line">    m&#x3D;tf.TransformBroadcaster()</span><br><span class="line">    t &#x3D; geometry_msgs.msg.TransformStamped()</span><br><span class="line">    t.header.frame_id &#x3D; &#39;base_link&#39;</span><br><span class="line">    t.header.stamp &#x3D; rospy.Time(0)</span><br><span class="line">    t.child_frame_id &#x3D; &#39;link1&#39;</span><br><span class="line">    t.transform.translation.x &#x3D; 1</span><br><span class="line">    t.transform.translation.y &#x3D; 2</span><br><span class="line">    t.transform.translation.z &#x3D; 3</span><br><span class="line">    t.transform.rotation.w&#x3D;1</span><br><span class="line">    t.transform.rotation.x&#x3D;0</span><br><span class="line">    t.transform.rotation.y&#x3D;0</span><br><span class="line">    t.transform.rotation.z&#x3D;0</span><br><span class="line">#输入相对原点的值和欧拉角</span><br><span class="line">    rate &#x3D; rospy.Rate(1)</span><br><span class="line">    while not rospy.is_shutdown():</span><br><span class="line">        m.sendTransformMessage(t)</span><br><span class="line">        rate.sleep()</span><br></pre></td></tr></table></figure>
+<h2 id="55-tf相关工具命令"><a class="markdownIt-Anchor" href="#55-tf相关工具命令"></a> 5.5. TF相关工具命令</h2>
+<ol>
+<li>
+<p>根据当前的tf树创建一个pdf图：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ rosrun tf view_frames</span><br></pre></td></tr></table></figure>
+<p>这个工具首先订阅<code>/tf</code>，订阅5秒钟，根据这段时间接受到的tf信息，绘制成一张tf tree，然后创建成一个pdf图。</p>
+</li>
+<li>
+<p>查看当前的tf树：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ rosrun rqt_tf_tree rqt_tf_tree</span><br></pre></td></tr></table></figure>
+<p>该命令同样是查询tf tree的，但是与第一个命令的区别是该命令是动态的查询当前的tf tree,当前的任何变化都能当即看到，例如何时断开何时连接，捕捉到这些然后通过rqt插件显示出来。</p>
+</li>
+<li>
+<p>查看两个frame之间的变换关系：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ rosrun tf tf_echo[reference_frame][target_frame]</span><br></pre></td></tr></table></figure></li>
+</ol>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined" rel="external nofollow noreferrer">Malloy Yuan</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://elec-creator.com/posts/28077269.html">https://elec-creator.com/posts/28077269.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://elec-creator.com" target="_blank">Malloy Yuan</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/ros/">ROS</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/cover/post-cover/summarization-cover.jpg" data-sites="facebook,twitter,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><button class="reward-button"><i class="fas fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="post-qr-code__img" src="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/donate/wechat.jpg" alt="Wechat" onclick="window.open('https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/donate/wechat.jpg')"/><div class="post-qr-code__desc">Wechat</div></li><li class="reward-item"><img class="post-qr-code__img" src="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/donate/alipay.jpg" alt="Alipay" onclick="window.open('https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/donate/alipay.jpg')"/><div class="post-qr-code__desc">Alipay</div></li></ul></div></button></div><div class="post-ad"><ins  class="adsbygoogle"  style="display:block"  data-ad-format="fluid"  data-ad-layout-key="-fb+5w+4e-db+86"  data-ad-client="ca-pub-6017375467561303"  data -ad-slot="3926580292"></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({})</script></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/3b2a603b.html"><img class="prev-cover" data-src="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/cover/post-cover/ros-cover.jpg" onerror="onerror=null;src='/img/private/post_img-load-404-1.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">ROS-roscpp</div></div></a></div><div class="next-post pull-right"><a href="/posts/ac1d9abb.html"><img class="next-cover" data-src="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/cover/post-cover/hexo-cover.jpg" onerror="onerror=null;src='/img/private/post_img-load-404-1.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">hexo官方标签插件使用</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/posts/15fa7048.html" title="ROS"><img class="relatedPosts_cover" data-src="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/cover/post-cover/ros-cover.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-03-18</div><div class="relatedPosts_title">ROS</div></div></a></div><div class="relatedPosts_item"><a href="/posts/b74e4547.html" title="ROS学习过程的疑问"><img class="relatedPosts_cover" data-src="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/cover/post-cover/ros-cover.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-05</div><div class="relatedPosts_title">ROS学习过程的疑问</div></div></a></div><div class="relatedPosts_item"><a href="/posts/894a0bcb.html" title="ROS常用指令整理"><img class="relatedPosts_cover" data-src="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/cover/post-cover/ros-cover.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-07-05</div><div class="relatedPosts_title">ROS常用指令整理</div></div></a></div><div class="relatedPosts_item"><a href="/posts/8ae22c6d.html" title="ROS通信框架"><img class="relatedPosts_cover" data-src="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/cover/post-cover/ros-cover.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-05-18</div><div class="relatedPosts_title">ROS通信框架</div></div></a></div><div class="relatedPosts_item"><a href="/posts/72d3205.html" title="ROS-windows安装ROS环境"><img class="relatedPosts_cover" data-src="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/cover/post-cover/ros-cover.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-05-07</div><div class="relatedPosts_title">ROS-windows安装ROS环境</div></div></a></div><div class="relatedPosts_item"><a href="/posts/59244a47.html" title="ROS常用工具"><img class="relatedPosts_cover" data-src="https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/cover/post-cover/ros-cover.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="far fa-calendar-alt fa-fw"></i> 2020-05-03</div><div class="relatedPosts_title">ROS常用工具</div></div></a></div></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div><div id="lv-container" data-id="city" data-uid="MTAyMC80OTE0Ny8yNTY0MQ=="><script>(function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+})(document, 'script');</script></div></div></article></main><footer id="footer" style="background-image: url(https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/image/top/post-top/ros-top.jpg)" data-type="photo"><div id="footer-wrap"><div class="copyright">&copy;2020 <i style="color:#FF6A6A" class="fa fa-heartbeat"></i> Malloy Yuan</div><div class="icp"><a href="http://www.beian.miit.gov.cn" target="_blank" rel="noopener external nofollow noreferrer"><img class="icp-icon" src="/img/private/icp.png"/><span>湘ICP备20005957号</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><button id="readmode" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font_plus" title="放大字体"><i class="fas fa-plus"></i></button><button id="font_minus" title="缩小字体"><i class="fas fa-minus"></i></button><button class="translate_chn_to_cht" id="translateLink" title="简繁转换">繁</button><button id="darkmode" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" title="设置"><i class="fas fa-cog"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fas fa-comments"></i></a><button class="close" id="mobile-toc-button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat_btn" title="rightside.chat_btn"><i class="fas fa-sms"></i></button><button id="go-up" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener external nofollow noreferrer" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script id="ribbon_piao" mobile="false" src="/js/third-party/piao.js"></script><script src="/js/third-party/activate-power-mode.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module" defer></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js" async></script><script src="/js/third-party/ClickShowText.js"></script><script src="https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js"></script><script>document.addEventListener('DOMContentLoaded', function() {
+  pangu.autoSpacingPage()
+})</script><script src="/js/search/local-search.js"></script><script>if (document.getElementsByClassName('mermaid').length) {
+  loadScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js',function () {
+    mermaid.initialize({
+      theme: 'default',
+  })
+})
+}</script><script src="//code.tidio.co/xmigmag8yz8wxyxf4rx4tsq9ejzzdqki.js" async="async"></script><script>(function() {
+  function onTidioChatApiReady() {
+    window.tidioChatApi.hide();
+    window.tidioChatApi.on("close", function() {
+      window.tidioChatApi.hide();
+    });
+  }
+  if (window.tidioChatApi) {
+    window.tidioChatApi.on("ready", onTidioChatApiReady);
+  } else {
+    document.addEventListener("tidioChat-ready", onTidioChatApiReady);
+  }
+
+  document.getElementById("chat_btn").addEventListener("click", function(){
+    window.tidioChatApi.show();
+    window.tidioChatApi.open();
+});
+})();</script><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"https://cdn.jsdelivr.net/gh/MCUheart/Hexo-blog-data@1.0.2/live2d-widget-model/haru/01/assets/haru01.model.json"},"display":{"superSample":2,"width":150,"height":490,"position":"left","hOffset":270,"vOffset":-50},"mobile":{"show":false,"scale":0.5},"react":{"opacityDefault":0.7,"opacityOnHover":0.2}});</script><script async>window.onload=function(){var a=document.createElement('script'),b=document.getElementsByTagName('script')[0];a.type='text/javascript',a.async=!0,a.src='/sw-register.js?v='+Date.now(),b.parentNode.insertBefore(a,b)};</script></body></html>
