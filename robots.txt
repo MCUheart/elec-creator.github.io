@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Allow: /archives/
+Allow: /tags/
+Allow: /about/
+Allow: /categories/
+Allow: /movies/
+Allow: /music/
+Allow: /gallery/
+Allow: /books/
+Allow: /posts/
+
+
+Disallow: /vendors/
+Disallow: /js/
+Disallow: /css/
+Disallow: /fonts/
+Disallow: /vendors/
+Disallow: /fancybox/
+
+Sitemap: https://elec-creator.com/sitemap.xml
+Sitemap: https://elec-creator.com/baidusitemap.xml

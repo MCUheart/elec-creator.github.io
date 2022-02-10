@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Malloy Yuan 的个人博客</title>
+  
+  <subtitle>你我皆是黑马!</subtitle>
+  <link href="https://elec-creator.com/atom.xml" rel="self"/>
+  
+  <link href="https://elec-creator.com/"/>
+  <updated>2022-02-10T03:46:06.114Z</updated>
+  <id>https://elec-creator.com/</id>
+  
+  <author>
+    <name>Malloy Yuan</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>总结基础知识点面(一) 单片机篇</title>
+    <link href="https://elec-creator.com/posts/a8c481ea.html"/>
+    <id>https://elec-creator.com/posts/a8c481ea.html</id>
+    <published>2020-08-08T16:55:00.000Z</published>
+    <updated>2022-02-10T03:46:06.114Z</updated>
+    
+    
+    <summary type="html">MCU单片机使用总结梳理</summary>
+    
+    
+    
+    <category term="知识梳理" scheme="https://elec-creator.com/categories/summarization/"/>
+    
+    <category term="MCU" scheme="https://elec-creator.com/categories/summarization/mcu/"/>
+    
+    
+    <category term="MCU" scheme="https://elec-creator.com/tags/mcu/"/>
+    
+    <category term="知识梳理" scheme="https://elec-creator.com/tags/summarization/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>C++ array模板类使用</title>
+    <link href="https://elec-creator.com/posts/3a13bccb.html"/>
+    <id>https://elec-creator.com/posts/3a13bccb.html</id>
+    <published>2020-07-24T14:52:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">C++编程语言</summary>
+    
+    
+    
+    <category term="编程语言" scheme="https://elec-creator.com/categories/programming-language/"/>
+    
+    <category term="C++" scheme="https://elec-creator.com/categories/programming-language/cpp/"/>
+    
+    
+    <category term="编程语言" scheme="https://elec-creator.com/tags/programming-language/"/>
+    
+    <category term="C++" scheme="https://elec-creator.com/tags/cpp/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>C++ 代码换行的问题</title>
+    <link href="https://elec-creator.com/posts/925153f2.html"/>
+    <id>https://elec-creator.com/posts/925153f2.html</id>
+    <published>2020-07-24T14:24:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">C++编程语言</summary>
+    
+    
+    
+    <category term="编程语言" scheme="https://elec-creator.com/categories/programming-language/"/>
+    
+    <category term="C++" scheme="https://elec-creator.com/categories/programming-language/cpp/"/>
+    
+    
+    <category term="编程语言" scheme="https://elec-creator.com/tags/programming-language/"/>
+    
+    <category term="C++" scheme="https://elec-creator.com/tags/cpp/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>C++ 对数组进行复制</title>
+    <link href="https://elec-creator.com/posts/dd9d548b.html"/>
+    <id>https://elec-creator.com/posts/dd9d548b.html</id>
+    <published>2020-07-24T14:20:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">C++编程语言</summary>
+    
+    
+    
+    <category term="编程语言" scheme="https://elec-creator.com/categories/programming-language/"/>
+    
+    <category term="C++" scheme="https://elec-creator.com/categories/programming-language/cpp/"/>
+    
+    
+    <category term="编程语言" scheme="https://elec-creator.com/tags/programming-language/"/>
+    
+    <category term="C++" scheme="https://elec-creator.com/tags/cpp/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>C++ vector的用法</title>
+    <link href="https://elec-creator.com/posts/4858c62f.html"/>
+    <id>https://elec-creator.com/posts/4858c62f.html</id>
+    <published>2020-07-24T14:12:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">C++编程语言</summary>
+    
+    
+    
+    <category term="编程语言" scheme="https://elec-creator.com/categories/programming-language/"/>
+    
+    <category term="C++" scheme="https://elec-creator.com/categories/programming-language/cpp/"/>
+    
+    
+    <category term="编程语言" scheme="https://elec-creator.com/tags/programming-language/"/>
+    
+    <category term="C++" scheme="https://elec-creator.com/tags/cpp/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ROS学习过程的疑问</title>
+    <link href="https://elec-creator.com/posts/b74e4547.html"/>
+    <id>https://elec-creator.com/posts/b74e4547.html</id>
+    <published>2020-07-05T10:34:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">机器人操作系统</summary>
+    
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/categories/ros/"/>
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/tags/ros/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ROS常用指令整理</title>
+    <link href="https://elec-creator.com/posts/894a0bcb.html"/>
+    <id>https://elec-creator.com/posts/894a0bcb.html</id>
+    <published>2020-07-05T08:26:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">机器人操作系统</summary>
+    
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/categories/ros/"/>
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/tags/ros/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ROS通信框架</title>
+    <link href="https://elec-creator.com/posts/8ae22c6d.html"/>
+    <id>https://elec-creator.com/posts/8ae22c6d.html</id>
+    <published>2020-05-18T08:26:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">机器人操作系统</summary>
+    
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/categories/ros/"/>
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/tags/ros/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ROS-windows安装ROS环境</title>
+    <link href="https://elec-creator.com/posts/72d3205.html"/>
+    <id>https://elec-creator.com/posts/72d3205.html</id>
+    <published>2020-05-07T08:26:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">机器人操作系统</summary>
+    
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/categories/ros/"/>
+    
+    <category term="Windows" scheme="https://elec-creator.com/categories/ros/windows/"/>
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/tags/ros/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ROS常用工具</title>
+    <link href="https://elec-creator.com/posts/59244a47.html"/>
+    <id>https://elec-creator.com/posts/59244a47.html</id>
+    <published>2020-05-03T08:26:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">机器人操作系统</summary>
+    
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/categories/ros/"/>
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/tags/ros/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ROS-rospy</title>
+    <link href="https://elec-creator.com/posts/53197a40.html"/>
+    <id>https://elec-creator.com/posts/53197a40.html</id>
+    <published>2020-04-28T11:26:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">机器人操作系统</summary>
+    
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/categories/ros/"/>
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/tags/ros/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ROS-roscpp</title>
+    <link href="https://elec-creator.com/posts/3b2a603b.html"/>
+    <id>https://elec-creator.com/posts/3b2a603b.html</id>
+    <published>2020-04-28T08:26:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">机器人操作系统</summary>
+    
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/categories/ros/"/>
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/tags/ros/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ROS-TF与URDF</title>
+    <link href="https://elec-creator.com/posts/28077269.html"/>
+    <id>https://elec-creator.com/posts/28077269.html</id>
+    <published>2020-04-27T08:26:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">机器人操作系统</summary>
+    
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/categories/ros/"/>
+    
+    
+    <category term="ROS" scheme="https://elec-creator.com/tags/ros/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hexo官方标签插件使用</title>
+    <link href="https://elec-creator.com/posts/ac1d9abb.html"/>
+    <id>https://elec-creator.com/posts/ac1d9abb.html</id>
+    <published>2020-04-25T10:17:40.000Z</published>
+    <updated>2022-02-10T03:46:06.114Z</updated>
+    
+    
+    <summary type="html">hexo标签插件</summary>
+    
+    
+    
+    <category term="Hexo" scheme="https://elec-creator.com/categories/hexo/"/>
+    
+    
+    <category term="Hexo" scheme="https://elec-creator.com/tags/hexo/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hexo主题使用笔记</title>
+    <link href="https://elec-creator.com/posts/7d372036.html"/>
+    <id>https://elec-creator.com/posts/7d372036.html</id>
+    <published>2020-04-18T11:26:40.000Z</published>
+    <updated>2022-02-10T03:46:06.114Z</updated>
+    
+    
+    <summary type="html">hexo主题使用笔记</summary>
+    
+    
+    
+    <category term="Hexo" scheme="https://elec-creator.com/categories/hexo/"/>
+    
+    
+    <category term="Hexo" scheme="https://elec-creator.com/tags/hexo/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Git上传的文件应用失败找不到该文件</title>
+    <link href="https://elec-creator.com/posts/ab7f85.html"/>
+    <id>https://elec-creator.com/posts/ab7f85.html</id>
+    <published>2020-04-18T08:50:40.000Z</published>
+    <updated>2022-02-10T03:46:06.114Z</updated>
+    
+    
+    <summary type="html">Git上传的文件应用失败找不到该文件解决方案</summary>
+    
+    
+    
+    <category term="Git" scheme="https://elec-creator.com/categories/git/"/>
+    
+    
+    <category term="Git" scheme="https://elec-creator.com/tags/git/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hexo使用Markdown出现标题错位,降级等异常情况</title>
+    <link href="https://elec-creator.com/posts/13477882.html"/>
+    <id>https://elec-creator.com/posts/13477882.html</id>
+    <published>2020-04-18T08:17:40.000Z</published>
+    <updated>2022-02-10T03:46:06.114Z</updated>
+    
+    
+    <summary type="html">hexo主题使用笔记</summary>
+    
+    
+    
+    <category term="Hexo" scheme="https://elec-creator.com/categories/hexo/"/>
+    
+    
+    <category term="Hexo" scheme="https://elec-creator.com/tags/hexo/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Shell笔记</title>
+    <link href="https://elec-creator.com/posts/45ed956e.html"/>
+    <id>https://elec-creator.com/posts/45ed956e.html</id>
+    <published>2020-04-18T02:26:40.000Z</published>
+    <updated>2022-02-10T03:46:06.118Z</updated>
+    
+    
+    <summary type="html">Linux的Shell笔记</summary>
+    
+    
+    
+    <category term="操作系统" scheme="https://elec-creator.com/categories/os/"/>
+    
+    <category term="Linux" scheme="https://elec-creator.com/categories/os/linux/"/>
+    
+    
+    <category term="Linux" scheme="https://elec-creator.com/tags/linux/"/>
+    
+    <category term="操作系统" scheme="https://elec-creator.com/tags/os/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Vscode快捷键</title>
+    <link href="https://elec-creator.com/posts/62e79da4.html"/>
+    <id>https://elec-creator.com/posts/62e79da4.html</id>
+    <published>2020-04-17T09:26:40.000Z</published>
+    <updated>2022-02-10T03:46:06.122Z</updated>
+    
+    
+    <summary type="html">Vscode快捷键</summary>
+    
+    
+    
+    <category term="Vscode" scheme="https://elec-creator.com/categories/vscode/"/>
+    
+    
+    <category term="Vscode" scheme="https://elec-creator.com/tags/vscode/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Vscode多设备同步扩展插件</title>
+    <link href="https://elec-creator.com/posts/fb80edc7.html"/>
+    <id>https://elec-creator.com/posts/fb80edc7.html</id>
+    <published>2020-04-17T08:26:40.000Z</published>
+    <updated>2022-02-10T03:46:06.122Z</updated>
+    
+    
+    <summary type="html">Vscode编辑器在多设备同步扩展插件</summary>
+    
+    
+    
+    <category term="Vscode" scheme="https://elec-creator.com/categories/vscode/"/>
+    
+    
+    <category term="Vscode" scheme="https://elec-creator.com/tags/vscode/"/>
+    
+  </entry>
+  
+</feed>
